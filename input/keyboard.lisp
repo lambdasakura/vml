@@ -1,41 +1,98 @@
 (defpackage #:vml-keyboard
   (:use #:cl #:cl-user :kmrcl))
-(in-package  #:vml-keyboard)
 (cl-annot:enable-annot-syntax)
-(defparameter *keyboard* (make-hash-table))
+(in-package  #:vml-keyboard)
 
-;; key1 key2 key3 key4 key5 key6 key7 key8 key9 key0
-;; key-a key-b key-c key-d key-e key-f key-g key-h key-i
-;; key-j key-k key-l key-m key-n key-o key-p key-q key-r
-;; key-s key-t key-u key-v key-w key-x key-y key-z 
-;; key-colon key-semicolon key-less key-equals key-greater
-;; key-question key-at key-leftbracket key-backslash
-;; key-right-bracket key-caret key-underline key-backquote
-;; key-backspace key-tab key-clear key-return key-pause
-;; key-escape key-exclaim key-quotedbl key-hash
-;; key-dollar key-ampersand key-quote key-leftparen 
-;; key-rightparen key-asterisk key-plus key-comma
-;; key-minus key-period key-slash key-delete
-;; key-up key-down key-left key-right)
+#|
+
+ keyboard wrapper 
+------------------
+
+|#
+;; (defconstant keyboard-list 
+;;   '(:vml-key1 :vml-key2 :vml-key3 :vml-key4 :vml-key5 :vml-key6 :vml-key7 :vml-key8 :vml-key9 :vml-key0
+;;     :vml-key-a :vml-key-b :vml-key-c :vml-key-d :vml-key-e :vml-key-f :vml-key-g :vml-key-h :vml-key-i
+;;     :vml-key-j :vml-key-k :vml-key-l :vml-key-m :vml-key-n :vml-key-o :vml-key-p :vml-key-q :vml-key-r
+;;     :vml-key-s :vml-key-t :vml-key-u :vml-key-v :vml-key-w :vml-key-x :vml-key-y :vml-key-z
+;;     :vml-key-colon :vml-key-semicolon :vml-key-less :vml-key-equals :vml-key-greater
+;;     :vml-key-question :vml-key-at :vml-key-leftbracket :vml-key-backslash
+;;     :vml-key-right-bracket :vml-key-caret :vml-key-underline :vml-key-backquote
+;;     :vml-key-backspace :vml-key-tab :vml-key-clear :vml-key-return :vml-key-pause
+;;     :vml-key-escape :vml-key-exclaim :vml-key-quotedbl :vml-key-hash
+;;     :vml-key-dollar :vml-key-ampersand :vml-key-quote :vml-key-leftparen
+;;     :vml-key-rightparen :vml-key-asterisk :vml-key-plus :vml-key-comma
+;;     :vml-key-minus :vml-key-period :vml-key-slash :vml-key-delete
+;;     :vml-key-up :vml-key-down :vml-key-left :vml-key-right))
+
+#|
+current-device-status
+----------------------
+
+to management physical keyboard state.
+sdl-main-loop(vml:game-start) update this table.
+
+up-key & down-key
+-----------------
+
+these functions are called at key event.
+update device state.
+|#
+(defparameter *current-device-status* 
+  (make-hash-table :test 'equal))
 
 @export
-(defclass keyboard-manager ()
-  ((state :initform (make-hash-table :test 'equal)
-	  :accessor state)))
-
-@export
-(defun init-keyboard ()
-  (setf *keyboard* 
-	(make-hash-table)))
+(defun init-current-device-status ()
+  (setf *current-device-status* (make-hash-table :test 'equal)))
 
 @export
 (defun up-key (key)
-  (setf (gethash key *keyboard*) nil))
+  (setf (gethash (sdl-key-name->vml-key-name key) 
+		 *current-device-status*)
+	nil))
 
 @export
 (defun down-key (key)
-  (setf (gethash key *keyboard*) t))
+  (setf (gethash (sdl-key-name->vml-key-name key)
+		 *current-device-status*)
+	t))
+
+(defun sdl-key-name->vml-key-name (sdl-key-name)
+  (intern (cl-ppcre:regex-replace
+	   "SDL"
+	   (format nil "~A" sdl-key-name)
+	   "VML") :keyword))
+
+
+(defclass keyboard-state ()
+  ((current :initform (make-hash-table :test 'equal)
+	    :accessor current)
+   (prev :initform (make-hash-table :test 'equal)
+	 :accessor prev)))
+
+(defparameter *keyboard-state* 
+  (make-instance 'keyboard-state))
+
+@export 
+(defun keyboard-update ()
+  (setf (prev *keyboard-state*)
+	(alexandria:copy-hash-table 
+	 (current *keyboard-state*)))
+  (setf (current *keyboard-state*)
+	(alexandria:copy-hash-table 
+	 *current-device-status*)))
 
 @export
-(defun keyboard-state (button)
-  (gethash button *keyboard*))
+(defun keyboard-pressed (button)
+  (gethash button (current *keyboard-state*)))
+
+@export
+(defun keyboard-pushed (button)
+  (and (eq (gethash button (prev *keyboard-state*)) nil)
+       (eq (gethash button (current *keyboard-state*)) t)))
+
+@export
+(defun init-keyboard ()
+  (setf *keyboard-state* 
+	(make-instance 'keyboard-state))  
+  (setf *current-device-status* 
+	(make-hash-table :test 'equal)))

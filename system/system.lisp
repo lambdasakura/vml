@@ -236,10 +236,8 @@ Vml's entry function.
     (funcall (game-init-func self))
     (sdl:with-events ()
       (:quit-event () (funcall (game-quit-func self)) t)
-       (:MOUSE-BUTTON-DOWN-EVENT (:BUTTON BUTTON :STATE STATE :X X :Y Y)  
-				 &BODY BODY)  
-       (:MOUSE-BUTTON-UP-EVENT (:BUTTON BUTTON :STATE STATE :X X :Y Y)  
-			 &BODY BODY) 
+      (:MOUSE-BUTTON-DOWN-EVENT (:BUTTON BUTTON :STATE STATE :X X :Y Y) )
+      (:MOUSE-BUTTON-UP-EVENT (:BUTTON BUTTON :STATE STATE :X X :Y Y) ) 
       (:KEY-DOWN-EVENT (:KEY KEY :MOD-KEY mod-key)  
 		       (vml-keyboard:down-key key)
 		       (when (fullscreen-key-press-p key mod-key)
@@ -251,7 +249,7 @@ Vml's entry function.
 				(setf *game-stopped* nil))
 			       ((eql *game-stopped* nil)
 				(setf *game-stopped* t)))))
-      (:KEY-UP-EVENT ( :KEY KEY) (up-key key))
+      (:KEY-UP-EVENT (:KEY KEY) (up-key key))
       (:JOY-AXIS-MOTION-EVENT 
        (:WHICH WHICH :AXIS AXIS :VALUE VALUE )
        (vml-joystick:handle-cursor-event axis value which))
@@ -263,6 +261,7 @@ Vml's entry function.
        (vml-joystick:handle-button-release-event button which))
       (:IDLE () 
 	     ;; (vml-joystick:joystick-update)
+	     (vml-keyboard:keyboard-update)
 	     #+my-game-debug
 	     (let ((connection
 	     	    (or swank::*emacs-connection* (swank::default-connection))))
