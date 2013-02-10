@@ -1,7 +1,7 @@
 # VML(Visual and Multimedeia Library)
 ======================
 
-VMLは、Common Lispでゲーム開発を行う人向けのライブラリです
+VMLはCommon Lispでゲーム開発を行う人向けのライブラリです
  
 使い方
 ------
