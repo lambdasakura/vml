@@ -58,7 +58,8 @@ Usage:
 	:cl-annot.doc
 	:cl-store
 	:cl-fad
-	:vml-input
+	:vml-fonts
+	:vml-graphics
 	:vml-keyboard
 	:vml-joystick)
   (:nicknames :vml-system))

@@ -8,9 +8,8 @@
   	   ((:file "generate-container")))
    (:module input
   	   :components 
-  	   ((:file "packages")
-  	    (:file "keyboard" :depends-on ("packages"))
-  	    (:file "joystick" :depends-on ("packages"))))
+  	   ((:file "keyboard")
+  	    (:file "joystick")))
 
    (:module music
 	     :components 
@@ -23,7 +22,9 @@
   	     (:file "sound" :depends-on ("packages"))))
    (:module graphic
   	    :components 
-  	    ((:file "primitive")))
+  	    ((:file "primitive")
+	     (:file "image")
+	     (:file "font")))
    (:module system
   	    :components 
   	    ((:file "system"))))

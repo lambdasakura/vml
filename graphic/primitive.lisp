@@ -4,8 +4,7 @@
   (:use :cl
 	:cl-annot
 	:cl-annot.class
-	:cl-annot.doc
-	))
+	:cl-annot.doc))
 (in-package :vml-graphics)
 (cl-annot:enable-annot-syntax)
 
