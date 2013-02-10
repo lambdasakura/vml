@@ -1,4 +1,6 @@
 (in-package  #:vml-keyboard)
+(defpackage #:vml-keyboard
+  (:use #:cl #:cl-user :kmrcl))
 (cl-annot:enable-annot-syntax)
 (defparameter *keyboard* (make-hash-table))
 
@@ -24,9 +26,7 @@
 @export
 (defun init-keyboard ()
   (setf *keyboard* 
-	(make-hash-table))
-  ;; (make-instance 'keyboard-manager)
-  )
+	(make-hash-table)))
 
 @export
 (defun up-key (key)

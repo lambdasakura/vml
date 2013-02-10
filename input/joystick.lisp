@@ -1,3 +1,6 @@
+(defpackage #:vml-joystick
+  (:nicknames :joystick)
+  (:use #:cl #:cl-user :kmrcl))
 (in-package :vml-joystick)
 (cl-annot:enable-annot-syntax)
 
