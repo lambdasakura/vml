@@ -1,74 +1,56 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; VML System Initialize functions.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#|
 
-;;; 
-;;; lispbuilder's render_string-* functions are *not* support UTF-8 string.
-;;; follows functions are fixed this.
-;;; 
+VML System 
+VML Library System Initialize Functions
 
-;;; enter lispbuilder
-(in-package #:lispbuilder-sdl)
-(cl-annot:enable-annot-syntax)
-@export
-(defmethod _render-string-shaded_ ((string string) (fg-color color) 
-				   (bg-color color) (font ttf-font) free cache)
-  (let ((surf nil))
-    (with-foreign-color-copy (fg-struct fg-color)
-      (with-foreign-color-copy (bg-struct bg-color)
-        (multiple-value-bind (fg bg)
-            (if (cffi:foreign-symbol-pointer "TTF_glue_RenderUTF8_Shaded")
-              (values fg-struct bg-struct)
-              (values (+ (ash (b fg-color) 16)
-                         (ash (g fg-color) 8)
-                         (r fg-color))
-                      (+ (ash (b bg-color) 16)
-                         (ash (g bg-color) 8)
-                         (r bg-color))))
-          (setf surf (make-instance 'surface 
-				    :fp (sdl-ttf-cffi::render-utf8-shaded 
-					 (fp font) string fg bg))))))
-    (when cache
-      (setf (cached-surface font) surf))
-    surf))
+Author
+lambda_sakura (lambda.sakura@gmail.com)
 
-@export
-(defmethod _render-string-solid_ ((string string) (font ttf-font) (color color)
-				  free cache)
-  (let ((surf nil))
-    (with-foreign-color-copy (col-struct color)
-      (setf surf (make-instance 'surface
-				:fp (sdl-ttf-cffi::render-utf8-solid 
-				     (fp font)
-				     string
-				     (if (cffi:foreign-symbol-pointer 
-					  "TTF_glue_RenderUTF8_Solid")
-					 col-struct
-					 (+ (ash (b color) 16)
-					    (ash (g color) 8)
-					    (r color)))))))
-    (when cache
-      (setf (cached-surface font) surf))
-    surf))
+Usage:
 
-@export
-(defmethod _render-string-blended_ ((string string) (font ttf-font)
-				    (color color) free cache)
-  (let ((surf nil))
-    (with-foreign-color-copy (col-struct color)
-      (setf surf (make-instance 'surface
-				:fp (sdl-ttf-cffi::render-utf8-blended 
-				     (fp font)
-				     string
-				     (if (cffi:foreign-symbol-pointer "TTF_glue_RenderUTF8_Blended")
-					 col-struct
-					 (+ (ash (b color) 0)
-					    (ash (g color) 8)
-					    (ash (r color) 16)))))))
-    (when cache
-      (setf (cached-surface font) surf))
-    surf))
-;;; leave lispbuilder
+    ;; define main-loop function.
+    ;; this function call at each frame.
+    (defun game-main ()
+        ....
+    )
+
+    ;; define game-quit function.
+    ;; this function call at game's quit.
+    (defun game-quit ()
+      ;; release resources.
+    )
+
+    ;; define reload textures.
+    ;; at toggle fullscreen and window-mode, we lost texture image.
+    ;; this function to called prevend this problem.
+    (defun reload-textures ()
+       ;; reload textures
+       ...
+    )
+
+    ;; define game-init function.
+    ;; call this function at game start time.
+    (defun game-init ()
+      ;; allocate game resources and initialize game parameters.
+      ....
+    )
+
+    ;; to start game
+    (defun main (&optional (init-scene :title))
+     (let* ((game (make-instance 'kyutoki))
+	 (vml (make-instance 'vml-system:vml-system 
+			     :game-title \"sample game\"
+			     :game-main 'game-loop
+			     :game-quit 'game-quit
+			     :tex-reload 'reload-textures game
+			     :game-init 'game-init)))
+    (vml-system:game-start vml)))
+
+
+|#                                                                                                                                                                                                                                                                                                                           
 
 (in-package #:cl-user)
 (defpackage :vml-system
@@ -300,54 +282,70 @@ Vml's entry function.
     (sdl-mixer:Halt-sample :channel t))
   (sdl-mixer:quit-mixer))
 
-(doc:start)                                                                                                                                                                                                                                                                                                                
-                                                                                                                                                                                                                                                                                                                           
-@doc:NAME "                                                                                                                                                                                                                                                                                                                
-VML System - VML Library System Initialize Functions
-"                                                                                                                                                                                                                                                                                                                          
-                                                                                                                                                                                                                                                                                                                           
-@doc:SYNOPSIS "                                                                                                                                                                                                                                                                                                            
+;;; 
+;;; lispbuilder's render_string-* functions are *not* support UTF-8 string.
+;;; follows functions are fixed this.
+;;; 
 
-    ;; define main-loop function.
-    ;; this function call at each frame.
-    (defun game-main ()
-        ....
-    )
+;;; enter lispbuilder
+(in-package #:lispbuilder-sdl)
+(cl-annot:enable-annot-syntax)
+@export
+(defmethod _render-string-shaded_ ((string string) (fg-color color) 
+				   (bg-color color) (font ttf-font) free cache)
+  (let ((surf nil))
+    (with-foreign-color-copy (fg-struct fg-color)
+      (with-foreign-color-copy (bg-struct bg-color)
+        (multiple-value-bind (fg bg)
+            (if (cffi:foreign-symbol-pointer "TTF_glue_RenderUTF8_Shaded")
+              (values fg-struct bg-struct)
+              (values (+ (ash (b fg-color) 16)
+                         (ash (g fg-color) 8)
+                         (r fg-color))
+                      (+ (ash (b bg-color) 16)
+                         (ash (g bg-color) 8)
+                         (r bg-color))))
+          (setf surf (make-instance 'surface 
+				    :fp (sdl-ttf-cffi::render-utf8-shaded 
+					 (fp font) string fg bg))))))
+    (when cache
+      (setf (cached-surface font) surf))
+    surf))
 
-    ;; define game-quit function.
-    ;; this function call at game's quit.
-    (defun game-quit ()
-      ;; release resources.
-    )
+@export
+(defmethod _render-string-solid_ ((string string) (font ttf-font) (color color)
+				  free cache)
+  (let ((surf nil))
+    (with-foreign-color-copy (col-struct color)
+      (setf surf (make-instance 'surface
+				:fp (sdl-ttf-cffi::render-utf8-solid 
+				     (fp font)
+				     string
+				     (if (cffi:foreign-symbol-pointer 
+					  "TTF_glue_RenderUTF8_Solid")
+					 col-struct
+					 (+ (ash (b color) 16)
+					    (ash (g color) 8)
+					    (r color)))))))
+    (when cache
+      (setf (cached-surface font) surf))
+    surf))
 
-    ;; define reload textures.
-    ;; at toggle fullscreen and window-mode, we lost texture image.
-    ;; this function to called prevend this problem.
-    (defun reload-textures ()
-       ;; reload textures
-       ...
-    )
-
-    ;; define game-init function.
-    ;; call this function at game start time.
-    (defun game-init ()
-      ;; allocate game resources and initialize game parameters.
-      ....
-    )
-                                                                                                                                                                                                                                                                                                                           
-    ;; to start game
-    (defun main (&optional (init-scene :title))
-     (let* ((game (make-instance 'kyutoki))
-	 (vml (make-instance 'vml-system:vml-system 
-			     :game-title \"sample game\"
-			     :game-main 'game-loop
-			     :game-quit 'game-quit
-			     :tex-reload 'reload-textures game
-			     :game-init 'game-init)))
-    (vml-system:game-start vml)))                                                                                                                                                                                                                                                                                          
-"                                                                                                                                                                                                                                                                                                                          
-                                                                                                                                                                                                                                                                                                                           
-@doc:AUTHOR "                                                                                                                                                                                                                                                                                                              
-* lambda_sakura (lambda.sakura@gmail.com)                                                                                                                                                                                                                                                                                   
-"                                                                                                                                                                                                                                                                                                                          
-                                                                                                                                                                                                                                                                                                                           
+@export
+(defmethod _render-string-blended_ ((string string) (font ttf-font)
+				    (color color) free cache)
+  (let ((surf nil))
+    (with-foreign-color-copy (col-struct color)
+      (setf surf (make-instance 'surface
+				:fp (sdl-ttf-cffi::render-utf8-blended 
+				     (fp font)
+				     string
+				     (if (cffi:foreign-symbol-pointer "TTF_glue_RenderUTF8_Blended")
+					 col-struct
+					 (+ (ash (b color) 0)
+					    (ash (g color) 8)
+					    (ash (r color) 16)))))))
+    (when cache
+      (setf (cached-surface font) surf))
+    surf))
+;;; leave lispbuilder
