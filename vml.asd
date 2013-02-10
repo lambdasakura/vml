@@ -36,10 +36,8 @@
    :lispbuilder-sdl-ttf
    :lispbuilder-sdl-mixer
    :cl-ppcre
-   :cl-cont
    :cl-annot
    :cl-test-more
-   :cl-containers
    :cl-opengl
    :cl-store
    :cl-fad

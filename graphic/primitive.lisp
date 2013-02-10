@@ -5,10 +5,9 @@
 	:cl-annot
 	:cl-annot.class
 	:cl-annot.doc
-	:cl-containers))
+	))
 (in-package :vml-graphics)
 (cl-annot:enable-annot-syntax)
-
 
 @export
 (defun draw-box (x y width height &key (r 0.0) (g 0.0) (b 0.0)
