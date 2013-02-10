@@ -1,4 +1,4 @@
-# VML(Visual and Multimedeia Library)
+# VML(Visual and Multimedia Library)
 ======================
 
 VMLはCommon Lispでゲーム開発を行う人向けのライブラリです
