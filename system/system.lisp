@@ -1,12 +1,18 @@
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (when (find-package :swank)
-    (pushnew :my-game-debug *features*)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; VML System Initialize functions.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;; 
+;;; lispbuilder's render_string-* functions are *not* support UTF-8 string.
+;;; follows functions are fixed this.
+;;; 
+
+;;; enter lispbuilder
 (in-package #:lispbuilder-sdl)
 (cl-annot:enable-annot-syntax)
-
 @export
-(defmethod _render-string-shaded_ ((string string) (fg-color color) (bg-color color) (font ttf-font) free cache)
+(defmethod _render-string-shaded_ ((string string) (fg-color color) 
+				   (bg-color color) (font ttf-font) free cache)
   (let ((surf nil))
     (with-foreign-color-copy (fg-struct fg-color)
       (with-foreign-color-copy (bg-struct bg-color)
@@ -19,41 +25,54 @@
                       (+ (ash (b bg-color) 16)
                          (ash (g bg-color) 8)
                          (r bg-color))))
-          (setf surf (make-instance 'surface :fp (sdl-ttf-cffi::render-utf8-shaded (fp font) string fg bg))))))
+          (setf surf (make-instance 'surface 
+				    :fp (sdl-ttf-cffi::render-utf8-shaded 
+					 (fp font) string fg bg))))))
     (when cache
       (setf (cached-surface font) surf))
     surf))
 
 @export
-(defmethod _render-string-solid_ ((string string) (font ttf-font) (color color) free cache)
+(defmethod _render-string-solid_ ((string string) (font ttf-font) (color color)
+				  free cache)
   (let ((surf nil))
     (with-foreign-color-copy (col-struct color)
-      (setf surf (make-instance 'surface :fp (sdl-ttf-cffi::render-utf8-solid (fp font) string
-                                                                                (if (cffi:foreign-symbol-pointer "TTF_glue_RenderUTF8_Solid")
-                                                                                  col-struct
-                                                                                  (+ (ash (b color) 16)
-                                                                                     (ash (g color) 8)
-                                                                                     (r color)))))))
+      (setf surf (make-instance 'surface
+				:fp (sdl-ttf-cffi::render-utf8-solid 
+				     (fp font)
+				     string
+				     (if (cffi:foreign-symbol-pointer 
+					  "TTF_glue_RenderUTF8_Solid")
+					 col-struct
+					 (+ (ash (b color) 16)
+					    (ash (g color) 8)
+					    (r color)))))))
     (when cache
       (setf (cached-surface font) surf))
     surf))
 
 @export
-(defmethod _render-string-blended_ ((string string) (font ttf-font) (color color) free cache)
+(defmethod _render-string-blended_ ((string string) (font ttf-font)
+				    (color color) free cache)
   (let ((surf nil))
     (with-foreign-color-copy (col-struct color)
-      (setf surf (make-instance 'surface :fp (sdl-ttf-cffi::render-utf8-blended (fp font) string
-                                                                                (if (cffi:foreign-symbol-pointer "TTF_glue_RenderUTF8_Blended")
-                                                                                  col-struct
-                                                                                  (+ (ash (b color) 0)
-                                                                                     (ash (g color) 8)
-                                                                                     (ash (r color) 16)))))))
+      (setf surf (make-instance 'surface
+				:fp (sdl-ttf-cffi::render-utf8-blended 
+				     (fp font)
+				     string
+				     (if (cffi:foreign-symbol-pointer "TTF_glue_RenderUTF8_Blended")
+					 col-struct
+					 (+ (ash (b color) 0)
+					    (ash (g color) 8)
+					    (ash (r color) 16)))))))
     (when cache
       (setf (cached-surface font) surf))
     surf))
+;;; leave lispbuilder
 
 (in-package #:cl-user)
 (defpackage :vml-system
+  (:documentation "VML System Initialize functions")
   (:use :cl
 	:cl-annot
 	:cl-annot.class
@@ -67,17 +86,22 @@
 (in-package :vml-system)
 (cl-annot:enable-annot-syntax)
 
-
+;; follow variables are defined display size.
+;; support 640 x 480 size only.
+;; TODO:Support other size.(1280 x 960 ... etc)
+(defparameter *display-height* 480)
+(defparameter *display-width* 640)
+(defparameter *framerate* 60)
 @export
 (defclass vml-system ()
   ((game-title :initarg :game-title :initform nil :accessor game-title)
    (game-quit :initarg :game-quit :initform nil :accessor game-quit-func)
    (game-main :initarg :game-main :initform nil :accessor game-main-func)
    (game-init :initarg :game-init :initform nil :accessor game-init-func)
-   (tex-reload :initarg :tex-reload :initform nil :accessor tex-reload)
-   ))
+   (tex-reload :initarg :tex-reload :initform nil :accessor tex-reload))
+  (:documentation "vml-system infomation."))
 
-@doc "initialize OpenGL settings."
+@doc "initialize OpenGL settings for 2D Games."
 (defun initialize-OpenGL ()
   (gl:enable :texture-2d)
   (gl:enable :blend)
@@ -96,8 +120,10 @@
 	 (setf *fullscreen* t)
 	 (change-fullscreen))))
 
+@doc "change screen to fullscreen.
+*notice* if change screen,you should reload textures."
 (defmethod change-fullscreen ((self vml-system))
-  (sdl:window 640 480 :fullscreen t
+  (sdl:window *display-width* *display-height* :fullscreen t
 	      :opengl-attributes '((:SDL-GL-DOUBLEBUFFER 1))
 	      :BPP 24 
 	      :icon-caption (game-title self)
@@ -105,8 +131,8 @@
 	      :opengl t)
   (gl:clear :color-buffer-bit :depth-buffer-bit)
   (gl:clear-color 0.0 0.0 0.0  1.00)
-  (gl:viewport 0 0 640 480)
-  (setf (sdl:frame-rate) 60)
+  (gl:viewport 0 0 *display-width* *display-height*)
+  (setf (sdl:frame-rate) *framerate*)
   (gl:enable :texture-2d)
   (gl:enable :blend)
   (gl:blend-func :src-alpha :one-minus-src-alpha)
@@ -115,18 +141,20 @@
   (gl:depth-func :lequal)
   (gl:matrix-mode :modelview)
   (gl:load-identity)
-  
   (funcall (tex-reload self)))
 
+@doc "change window mode.
+*notice* if change screen,you should reload textures."
 (defmethod change-window-mode ((self vml-system))
-  (sdl:window 640 480 :opengl-attributes '((:SDL-GL-DOUBLEBUFFER 1))
+  (sdl:window *display-width* *display-height*
+	      :opengl-attributes '((:SDL-GL-DOUBLEBUFFER 1))
 	      :BPP 24 :opengl t
 	      :icon-caption (game-title self)
 	      :title-caption (game-title self) )
   (gl:clear :color-buffer-bit :depth-buffer-bit)
   (gl:clear-color 0.0 0.0 0.0  1.00)
-  (gl:viewport 0 0 640 480)
-  (setf (sdl:frame-rate) 60)
+  (gl:viewport 0 0 *display-width* *display-height*)
+  (setf (sdl:frame-rate) *framerate*)
   (gl:enable :texture-2d)
   (gl:enable :blend)
   (gl:blend-func :src-alpha :one-minus-src-alpha)
@@ -137,7 +165,10 @@
   (gl:load-identity)
   (funcall (tex-reload self)))
 
-
+@doc "
+return 't if key to game-quit pressed.
+game-quit key is *alt + F4* 
+"
 (defun game-quit-key-press-p (key mod-key)
   (and (eql key :SDL-KEY-F4)  
        (or (sdl:modifier= '(:sdl-key-mod-ralt)
@@ -145,16 +176,18 @@
 	   (sdl:modifier= '(:sdl-key-mod-lalt)
 			  mod-key))))
 
+@doc "
+return 't if key to fullscreen-key pressed.
+fullscreen key is *alt + Enter* 
+"
 (defun fullscreen-key-press-p (key mod-key)
-
   (and (eql key :SDL-KEY-RETURN)  
        (or (sdl:modifier= '(:sdl-key-mod-lalt)
 			  mod-key)
 	   (sdl:modifier= '(:sdl-key-mod-ralt)
 			  mod-key))))
 
-@doc "To load SDL Library.
-in Windows,the DLL load from PATH."
+@doc "To load SDL Library.in Windows,the DLL load from PATH."
 (defun load-dynamic-libs ()
   (cffi:define-foreign-library sdl
     (t (:default "SDL")))
@@ -171,18 +204,18 @@ in Windows,the DLL load from PATH."
   (cffi:use-foreign-library sdl-gfx)
   (cffi:use-foreign-library sdl-ttf)
   (cffi:use-foreign-library sdl-mixer))
-
    
 (defmethod system-initialize ((self vml-system))
   (sdl:show-cursor nil)
-  (sdl:window 640 480
+  (sdl:window *display-width*
+	      *display-height*
 	      :bpp 24 :opengl t 
 	      :icon-caption (game-title self)
 	      :title-caption (game-title self)
 	      :opengl-attributes '((:SDL-GL-DOUBLEBUFFER 1)))
-  (gl:viewport 0 0 640 480)
+  (gl:viewport 0 0 *display-width* *display-height*)
   (sdl:disable-key-repeat)
-  (setf (sdl:frame-rate) 60))
+  (setf (sdl:frame-rate) *framerate*))
 
 
 (defmethod vml-init ((self vml-system))
@@ -192,24 +225,24 @@ in Windows,the DLL load from PATH."
   (sdl-mixer:allocate-channels 16)
   (sdl:enable-unicode)
   (vml-keyboard:init-keyboard)
-  (vml-joystick:init-joystick)
-  )
+  (vml-joystick:init-joystick))
 
+@doc "game's main function"
 (defmethod vml-system-game-main ((self vml-system))
+  ;; Clear display
   (gl:clear :color-buffer-bit :depth-buffer-bit)
-  
   (gl:clear-color 0.0 0.0 0.0  1.00)
-  
-  (gl:with-pushed-matrix
-    (gl:ortho 0 640 480 0 -1 1)
+  (gl:with-pushed-matrix (gl:ortho 0 *display-width* *display-height* 0 -1 1)
     (gl:enable :blend)
     (gl:color 1 1 1)
+    ;; call user's main func
     (funcall (game-main-func self))
     (gl:color 1 1 1))
   (gl:flush)
   (sdl:update-display))
 
-@doc "Vml's entry function.
+@doc "
+Vml's entry function.
 1. initialize vml system and user datas.
 2. exec game main-loop-function each frame.(default fps is 60fps)
 3. at exit game. exec quit-function.
@@ -265,7 +298,56 @@ in Windows,the DLL load from PATH."
   (when (sdl-mixer:sample-playing-p nil)
     (sdl-mixer:pause-sample t)
     (sdl-mixer:Halt-sample :channel t))
-  ;; (when *mixer-opened*
-  ;;   (sdl-mixer:Close-Audio t)
-  ;;   (setf *mixer-opened* nil))
   (sdl-mixer:quit-mixer))
+
+(doc:start)                                                                                                                                                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                                                           
+@doc:NAME "                                                                                                                                                                                                                                                                                                                
+VML System - VML Library System Initialize Functions
+"                                                                                                                                                                                                                                                                                                                          
+                                                                                                                                                                                                                                                                                                                           
+@doc:SYNOPSIS "                                                                                                                                                                                                                                                                                                            
+
+    ;; define main-loop function.
+    ;; this function call at each frame.
+    (defun game-main ()
+        ....
+    )
+
+    ;; define game-quit function.
+    ;; this function call at game's quit.
+    (defun game-quit ()
+      ;; release resources.
+    )
+
+    ;; define reload textures.
+    ;; at toggle fullscreen and window-mode, we lost texture image.
+    ;; this function to called prevend this problem.
+    (defun reload-textures ()
+       ;; reload textures
+       ...
+    )
+
+    ;; define game-init function.
+    ;; call this function at game start time.
+    (defun game-init ()
+      ;; allocate game resources and initialize game parameters.
+      ....
+    )
+                                                                                                                                                                                                                                                                                                                           
+    ;; to start game
+    (defun main (&optional (init-scene :title))
+     (let* ((game (make-instance 'kyutoki))
+	 (vml (make-instance 'vml-system:vml-system 
+			     :game-title \"sample game\"
+			     :game-main 'game-loop
+			     :game-quit 'game-quit
+			     :tex-reload 'reload-textures game
+			     :game-init 'game-init)))
+    (vml-system:game-start vml)))                                                                                                                                                                                                                                                                                          
+"                                                                                                                                                                                                                                                                                                                          
+                                                                                                                                                                                                                                                                                                                           
+@doc:AUTHOR "                                                                                                                                                                                                                                                                                                              
+* lambda_sakura (lambda.sakura@gmail.com)                                                                                                                                                                                                                                                                                   
+"                                                                                                                                                                                                                                                                                                                          
+                                                                                                                                                                                                                                                                                                                           
