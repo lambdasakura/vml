@@ -39,17 +39,14 @@ Usage:
     )
 
     ;; to start game
-    (defun main (&optional (init-scene :title))
-     (let* ((game (make-instance 'kyutoki))
-	 (vml (make-instance 'vml-system:vml-system 
-			     :game-title \"sample game\"
-			     :game-main 'game-loop
-			     :game-quit 'game-quit
-			     :tex-reload 'reload-textures game
-			     :game-init 'game-init)))
-    (vml-system:game-start vml)))
-
-
+    (defun main ()
+	   (let ((vml (make-instance 'vml-system:vml-system 
+			     :game-main #'game-main
+			     :game-quit #'game-quit
+			     :tex-reload #'reload-textures
+			     :game-init #'game-init)))
+		 (vml-system:game-start vml)))
+    
 |#                                                                                                                                                                                                                                                                                                                           
 
 (in-package #:cl-user)
