@@ -11,11 +11,17 @@
 (cl-annot:enable-annot-syntax)
 
 @export
-(defun draw-box (x y width height &key (color color))
-  (let ((r (red color))
+(defun draw-box (rect color)
+  (let ((x (x rect))
+	(y (y rect))
+	(width (w rect))
+	(height (h rect))
+	(r (red color))
 	(g (green color))
 	(b (blue color))
-	(a (if (alpha color) (alpha color) 1.0)))
+	(a (if (alpha color) (/ (alpha color) 255) 1.0)))
+    (declare (type fixnum x y width height))
+    (declare (type real r g b a))
     (gl:color r g b a)
     (gl:disable :texture-2d)
     (gl:with-primitive :polygon
@@ -23,8 +29,7 @@
       (gl:vertex x (+ y height) 1)
       (gl:vertex (+ x width) (+ y height) 1)
       (gl:vertex (+ x width) y 1))
-    (gl:enable :texture-2d))
-  )
+    (gl:enable :texture-2d)))
 
 @export
 (defun draw-rectangle (x y width height &key (line-width 1.0) (r 0.0) (g 0.0) (b 0.0)

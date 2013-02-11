@@ -45,8 +45,10 @@
 
 
 @export 
-(defun draw-font (text x y &key color (font lispbuilder-sdl:*default-font*))
-  (let* ((text-texture (get-text text :color (color-to-sdl-color color) :font font))
+(defun draw-font (text point color &key (font lispbuilder-sdl:*default-font*))
+  (let* ((x (x point))
+	 (y (y point))
+	 (text-texture (get-text text :color (color-to-sdl-color color) :font font))
 	 (w (font-width text-texture))
   	 (h (font-height text-texture)))
     (gl:enable :texture-2d)

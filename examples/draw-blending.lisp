@@ -1,34 +1,33 @@
 ;;;;
-;;;; VMLを初期化してウィンドウを表示するだけのサンプル
+;;;; ブレンディングのサンプル
 ;;;;
-(defpackage #:vml-draw-primitive-sample
-  (:use #:cl #:cl-user :kmrcl))
+(defpackage #:vml-blend-sample
+  (:use #:cl #:cl-user :kmrcl :vml-types :vml-graphics :vml-fonts))
 
 (cl-annot:enable-annot-syntax)
-(in-package #:vml-draw-primitive-sample)
+(in-package #:vml-blend-sample)
 
 ;;; ゲームの更新関数
 (defun game-main () 
-  (vml-graphics:draw-box 0   0 300 200 :r 255 :g 255 :b 255)
+  ;; (vml-graphics:draw-box 0   0 300 200 :color (vml-types:color :r 255 :g 255 :b 255))
   
-  (vml-fonts:draw-font "通常描画" 70 410 :color sdl:*red*)
-  (vml-graphics:draw-box 0   0 100 100 :r 255)
-  (vml-graphics:draw-box 100 0 100 100 :g 255)
-  (vml-graphics:draw-box 200 0 100 100 :b 255)
+  (draw-font "通常描画(Normal)" (point :x 0 :y 0) (color :r 255 :g 255 :b 255))
+  (draw-box (rect :x 0   :y 20 :w 100 :h 100) (color :r 255 :g 0   :b 0))
+  (draw-box (rect :x 100 :y 20 :w 100 :h 100) (color :r 0   :g 255 :b 0))
+  (draw-box (rect :x 200 :y 20 :w 100 :h 100) (color :r 0   :g 0   :b 255))
 
-  (vml-fonts:draw-font "アルファ合成" 70 420 :color sdl:*black*)
-  (vml-graphics:draw-box 0   100 100 100 :r 255 :alpha 128)
-  (vml-graphics:draw-box 50 100 150 100 :g 255 :alpha 128)
-  (vml-graphics:draw-box 150 100 150 100 :b 255 :alpha 128)
+  (draw-font "アルファ合成(Alpha)" (point :x 0 :y 130) (color :r 255 :g 255 :b 255))
+  (draw-box (rect :x 0   :y 150 :w 100 :h 100) (color :r 255 :g 0   :b 0   :a 128))
+  (draw-box (rect :x 50  :y 150 :w 150 :h 100) (color :r 0   :g 255 :b 0   :a 128))
+  (draw-box (rect :x 150 :y 150 :w 150 :h 100) (color :r 0   :g 0   :b 255 :a 128))
  
-  (vml-fonts:draw-font "加算合成" 70 420 :color sdl:*white*)
+  (draw-font "加算合成(Additive)" (point :x 0 :y 260) (color :r 255 :g 255 :b 255))
   (gl:blend-func :src-alpha :one)  
-  (vml-graphics:draw-box 0   240 300 100 :r 255 :g 255 :b 255 :alpha 128)
-  (vml-graphics:draw-box 0   240 100 100 :r 255 :g 0 :b 0 :alpha 128)
-  (vml-graphics:draw-box 50  240 150 100 :r 0 :g 255 :b 0 :alpha 128)
-  (vml-graphics:draw-box 150 240 150 100 :r 0 :g 0 :b 255 :alpha 128)
-  (gl:blend-func :src-alpha :one-minus-src-alpha)
-  )
+  ;; (vml-graphics:draw-box 0   240 300 100 :r 255 :g 255 :b 255 :alpha 128)
+  ;; (vml-graphics:draw-box 0   240 100 100 :r 255 :g 0 :b 0 :alpha 128)
+  ;; (vml-graphics:draw-box 50  240 150 100 :r 0 :g 255 :b 0 :alpha 128)
+  ;; (vml-graphics:draw-box 150 240 150 100 :r 0 :g 0 :b 255 :alpha 128)
+  (gl:blend-func :src-alpha :one-minus-src-alpha))
 
 ;;; ゲームの終了関数
 ;;; ゲーム終了時にVMLから自動的に呼ばれる
@@ -59,7 +58,7 @@
 ;;; ゲームのエントリポイント
 ;;; 
 @export
-(defun primitive-sample ()
+(defun blend-sample ()
   (let ((vml (make-instance 'vml-system:vml-system 
 			    :game-main #'game-main
 			    :game-quit #'game-quit
