@@ -12,19 +12,33 @@
 (in-package :vml-types)
 (cl-annot:enable-annot-syntax)
 
+@export-accessors
 @export
-(defstruct point x y)
+(defclass point ()
+  ((x :initarg :x :accessor x)
+   (y :initarg :y :accessor y)))
 
 @export
 (defun point (&key x y)
-    (make-point x y))
+  (make-instance 'point :x x :y y))
+
+@export-accessors
+@export
+(defclass rectangle ()
+  ((x :initform 0 :initarg :x  :accessor x)
+   (y :initform 0 :initarg :y  :accessor y)
+   (width :initform 0 :initarg :w  :accessor w)
+   (height :initform 0 :initarg :h  :accessor h)))
 
 @export
-(defstruct rectangle x y width height)
+(defun rectangle (&key x y w h)
+  (make-instance 'rectangle :x x :y y :w w :h h))
 
 @export
-(defun rectangle (&key x y width height)
-  (make-rectangle x y width height))
+(defmacro rect (&key x y w h)
+  `(rectangle :x ,x :y ,y :w ,w :h ,h))
+
+
 
 @export-accessors
 @export
