@@ -3,7 +3,8 @@
   :author "lambda_sakura <lambda.sakura@gmail.com>"
   :version "0.0.1"
   :components 
-  ((:module crypt
+  ((:file "types")
+   (:module crypt
   	   :components 
   	   ((:file "generate-container")))
    (:module input
@@ -24,7 +25,8 @@
   	    :components 
   	    ((:file "primitive")
 	     (:file "image")
-	     (:file "font")))
+	     (:file "font"))
+	    :serial t)
    (:module system
   	    :components 
   	    ((:file "system"))))

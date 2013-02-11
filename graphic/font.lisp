@@ -4,7 +4,9 @@
   (:use :cl
 	:cl-annot
 	:cl-annot.class
-	:cl-annot.doc))
+	:cl-annot.doc
+	:vml-types
+	))
 (in-package :vml-fonts)
 
 (cl-annot:enable-annot-syntax)
@@ -12,9 +14,7 @@
 @export
 (defun init-fonts ()
   (unless (sdl:initialise-default-font sdl:*ttf-font-vera*)
-    (error "FONT-EXAMPLE: Cannot initialize the default font."))
-  )
-
+    (error "FONT-EXAMPLE: Cannot initialize the default font.")))
 
 (defparameter *text-cache* (make-hash-table :test 'equal))
 
@@ -45,8 +45,8 @@
 
 
 @export 
-(defun draw-font (text x y &key (color sdl:*black*) (font lispbuilder-sdl:*default-font*))
-  (let* ((text-texture (get-text text :color color :font font))
+(defun draw-font (text x y &key color (font lispbuilder-sdl:*default-font*))
+  (let* ((text-texture (get-text text :color (color-to-sdl-color color) :font font))
 	 (w (font-width text-texture))
   	 (h (font-height text-texture)))
     (gl:enable :texture-2d)
