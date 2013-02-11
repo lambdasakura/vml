@@ -1,6 +1,6 @@
-(in-package  #:vml-keyboard)
 (defpackage #:vml-keyboard
   (:use #:cl #:cl-user :kmrcl))
+(in-package  #:vml-keyboard)
 (cl-annot:enable-annot-syntax)
 (defparameter *keyboard* (make-hash-table))
 
