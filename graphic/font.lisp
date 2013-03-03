@@ -25,30 +25,50 @@
    (width :initarg :width :accessor font-width)
    (height :initarg :height :accessor font-height)))
 
-(defun get-text (text &key (color sdl:*black*) 
+
+(defun get-text-solid (text &key (color sdl:*black*) 
 			(font lispbuilder-sdl:*default-font*))
-  ;; sdl:render-string-blended
-  (let* ((font-surf (sdl:render-string-blended text 
-					     :font font
-					     :color color 
-					     :free t
-					     :cache t))
-  	 (w (sdl:width font-surf))
+  (let* ((font-surf (sdl:render-string-solid text :font font :color color
+					     :free t :cache t))
+	 (w (sdl:width font-surf))
   	 (h (sdl:height font-surf))
+	 (temp-surface (sdl:create-surface w h :bpp 32 :pixel-alpha t )))
+    (sdl:blit-surface font-surf temp-surface)
+    (make-instance 'text-cache
+		   :texture (vml-image:surface-to-texture temp-surface)
+		   :text text
+		   :width w
+		   :height h)))
+
+(defun get-text-blended (text &key (color sdl:*black*) 
+			(font lispbuilder-sdl:*default-font*))
+  (let* ((font-surf (sdl:render-string-blended text 
+					       :font font
+					       :color color 
+					       :free t
+					       :cache t))
+	 (w (sdl:width font-surf))
+	 (h (sdl:height font-surf))
 	 (text-cache (make-instance 'text-cache
-				    :texture (vml-image:surface-to-texture font-surf)
+	  			    :texture (vml-image:surface-to-texture font-surf)
 				    :text text
 				    :width w
 				    :height h)))
-    text-cache
-    ))
+    text-cache))
 
-
+(defun get-text (text &key (color sdl:*black*)
+		 (font lispbuilder-sdl:*default-font*)
+		 (type :blend))
+  (case type
+    (:blend (get-text-blended text :color color :font font))
+    (:solid (get-text-solid text :color color :font font))))
+	    
 @export 
-(defun draw-font (text point color &key (font lispbuilder-sdl:*default-font*))
+(defun draw-font (text point color
+		  &key (font lispbuilder-sdl:*default-font*) (type :blend))
   (let* ((x (x point))
 	 (y (y point))
-	 (text-texture (get-text text :color (color-to-sdl-color color) :font font))
+	 (text-texture (get-text text :color (color-to-sdl-color color) :font font :type type))
 	 (w (font-width text-texture))
   	 (h (font-height text-texture)))
     (gl:enable :texture-2d)

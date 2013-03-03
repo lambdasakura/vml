@@ -20,5 +20,4 @@
      :texture-2d 0 :rgba w h 0 :rgba :unsigned-byte
      (sdl-base::with-pixel (pixels (sdl:fp surface))
        (sdl-base::pixel-data pixels)))
-    
     texture))
