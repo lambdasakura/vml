@@ -6,56 +6,85 @@
 	:cl-annot
 	:cl-annot.class
 	:cl-annot.doc
-	:vml-types
-	))
+	:vml-types)
+  (:export 
+   VML-FONTS:INIT-FONTS 
+   VML-FONTS:GET-TEXT 
+   VML-FONTS:GET-TEXT-TEXTURE
+   VML-FONTS:DRAW-FONT
+   VML-FONTS:LOAD-FONT
+   VML-FONTS:GEN-TEXT-TEXTURE))
+
 (in-package :vml-fonts)
 (cl-annot:enable-annot-syntax)
 
 #|
+-----------------------------------------------------
 surface cache
-----------
+-----------------------------------------------------
 
 create surface is slow & use memory.
 To avoid this overhead, memoize surface.
-
+-----------------------------------------------------
 |#
 (defparameter *solid-surface-cache* (make-hash-table :test 'equal))
 (defparameter *blend-surface-cache* (make-hash-table :test 'equal))
 
 (defun generate-font-key (string color)
+  "generate hash key for surface cache from Color num and Text"
   (format nil "~A:~A~A~A" string (red color) (green color) (blue color)))
 
-(defun get-text-blend-surface (string &key color
-					(font lispbuilder-sdl:*default-font*))
+(defun gen-text-surface (string func &key 
+				  color surf-cache
+				  (font lispbuilder-sdl:*default-font*))
   (let ((key (generate-font-key string color)))
-    (when (eq nil (nth-value 0 (gethash key *blend-surface-cache*)))
-      (setf (gethash key *blend-surface-cache*)
-	    (sdl:render-string-blended string
-				       :font font :color (color-to-sdl-color color)
-				       :free nil :cache nil)))
-    (gethash key *solid-surface-cache*)))
+    (when (eq nil (nth-value 0 (gethash key surf-cache)))
+      (setf (gethash key surf-cache)  (funcall func 
+				       string
+				       :font font
+				       :color (color-to-sdl-color color)
+				       :free nil 
+				       :cache nil)))
+    (gethash key surf-cache)))
 
-(defun get-text-solid-surface (string &key color
+
+(defun gen-text-surface-blend (string &key color
 					(font lispbuilder-sdl:*default-font*))
-  (let ((key (generate-font-key string color)))
-    (when (eq nil (nth-value 0 (gethash key *solid-surface-cache*)))
-      (setf (gethash key *solid-surface-cache*)
-	    (sdl:render-string-solid string :font font :color (color-to-sdl-color color)
-				     :free nil :cache nil)))
-    (gethash key *solid-surface-cache*)))
+  "generate text surface for blend."
+  (gen-text-surface string #'sdl:render-string-blended
+		    :color color :surf-cache *blend-surface-cache* :font font))
+
+(defun gen-text-surface-solid (string &key color
+					(font lispbuilder-sdl:*default-font*))
+  "generate text surface for solid"
+  (gen-text-surface string #'sdl:render-string-solid
+		    :color color :surf-cache *solid-surface-cache* :font font))
 
 
-(defclass text-cache ()
+#|
+-----------------------------------------------------
+text cache
+-----------------------------------------------------
+
+In OpenGL,there is a limit to the number of create textures.
+so we cached textures in hash table.
+
+inprogress to implements :(
+-----------------------------------------------------
+|#
+
+(defclass text-texture-cache ()
   ((texture :initarg :texture :accessor texture)
    (surface :initarg :surface :accessor surface)
    (text :initarg :text :accessor text)
    (width :initarg :width :accessor font-width)
    (height :initarg :height :accessor font-height)))
 
-(defparameter *text-cache* (make-hash-table :test 'equal))
+(defparameter *text-texture-cache* (make-hash-table :test 'equal))
 
-(defun get-text-solid (text &key color (font lispbuilder-sdl:*default-font*))
-  (let* ((font-surf (get-text-solid-surface text :font font :color color))
+(defun gen-text-texture-solid (text &key color 
+				      (font lispbuilder-sdl:*default-font*))
+  (let* ((font-surf (gen-text-surface-solid text :font font :color color))
 	 (w (sdl:width font-surf))
   	 (h (sdl:height font-surf))
 	 (temp-surface (sdl:create-surface w h :bpp 32 :pixel-alpha t )))
@@ -66,12 +95,9 @@ To avoid this overhead, memoize surface.
 		   :width w
 		   :height h)))
 
-(defun get-text-blended (text &key color (font lispbuilder-sdl:*default-font*))
-  (let* ((font-surf (sdl:render-string-blended text 
-					       :font font
-					       :color (color-to-sdl-color color) 
-					       :free t
-					       :cache t))
+(defun gen-text-texture-blend (text &key color
+					(font lispbuilder-sdl:*default-font*))
+  (let* ((font-surf (gen-text-surface-blend text :font font :color color))
 	 (w (sdl:width font-surf))
 	 (h (sdl:height font-surf))
 	 (text-cache (make-instance 'text-cache
@@ -81,20 +107,19 @@ To avoid this overhead, memoize surface.
 				    :height h)))
     text-cache))
 
-@export
-(defun get-text (text &key color
+(defun gen-text-texture (text &key color
 		 (font lispbuilder-sdl:*default-font*)
 		 (type :blend))
   (case type
-    (:blend (get-text-blended text :color color :font font))
-    (:solid (get-text-solid text :color color :font font))))
+    (:blend (gen-text-texture-blend text :color color :font font))
+    (:solid (gen-text-texture-solid text :color color :font font))))
 	    
-@export 
+@export
 (defun draw-font (text point color
 		  &key (font lispbuilder-sdl:*default-font*) (type :blend))
   (let* ((x (x point))
 	 (y (y point))
-	 (text-texture (get-text text :color color :font font :type type))
+	 (text-texture (gen-text-texture text :color color :font font :type type))
 	 (w (font-width text-texture))
   	 (h (font-height text-texture)))
     (gl:enable :texture-2d)
@@ -114,6 +139,13 @@ To avoid this overhead, memoize surface.
   (unless (sdl:initialise-default-font sdl:*ttf-font-vera*)
     (error "FONT-EXAMPLE: Cannot initialize the default font.")))
 
+@export
+(defun load-font (filename size)
+  (unless (sdl:initialise-default-font 
+	   (make-instance 'sdl:ttf-font-definition
+			  :size size
+			  :filename  filename))
+    (error "FONT-EXAMPLE: Cannot initialize the default font.")))
 
 ;; #+sbcl
 ;; (progn
