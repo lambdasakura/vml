@@ -11,6 +11,65 @@
 (cl-annot:enable-annot-syntax)
 
 @export
+(defun draw-point (point1 color &key (fill t)) 
+  (let ((x (x point1))
+	(y (y point1))
+	(r (red color))
+	(g (green color))
+	(b (blue color))
+	(a (if (alpha color) (/ (alpha color) 255) 1.0)))
+    (gl:color r g b a)
+    (gl:disable :texture-2d)
+    (gl:with-primitive :points
+      (gl:vertex x y 1))
+    (gl:enable :texture-2d)))		
+  
+@export
+(defun draw-line (point1 point2 color &key (fill t))
+  (let ((x1 (x point1))
+	(y1 (y point1))
+	(x2 (x point2))
+	(y2 (y point2))
+	(r (red color))
+	(g (green color))
+	(b (blue color))
+	(a (if (alpha color) (/ (alpha color) 255) 1.0)))
+    (gl:color r g b a)
+    (gl:disable :texture-2d)
+    (gl:with-primitive :lines
+      (gl:vertex x1 y1 1)
+      (gl:vertex x2 y2 1))
+    (gl:enable :texture-2d)))
+
+@export
+(defun draw-triangle (point1 point2 point3 color &key (fill t))
+  (let ((x1 (x point1))
+	(y1 (y point1))
+	(x2 (x point2))
+	(y2 (y point2))
+	(x3 (x point3))
+	(y3 (y point3))
+	(r (red color))
+	(g (green color))
+	(b (blue color))
+	(a (if (alpha color) (/ (alpha color) 255) 1.0)))
+    (gl:color r g b a)
+    (gl:disable :texture-2d)
+    (gl:with-primitive :triangles
+      (gl:vertex x1 y1 1)
+      (gl:vertex x2 y2 1)
+      (gl:vertex x3 y3 1))
+    (gl:enable :texture-2d)))
+		      
+(defun draw-rectangle (point1 point2 &key (fill t))
+  
+  )
+
+(defun draw-circle (center-point radius &key (fill t) )
+)
+
+
+@export
 (defun draw-box (rect color)
   (let ((x (x rect))
 	(y (y rect))
