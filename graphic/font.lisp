@@ -6,14 +6,7 @@
 	:cl-annot
 	:cl-annot.class
 	:cl-annot.doc
-	:vml-types)
-  (:export 
-   VML-FONTS:INIT-FONTS 
-   VML-FONTS:GET-TEXT 
-   VML-FONTS:GET-TEXT-TEXTURE
-   VML-FONTS:DRAW-FONT
-   VML-FONTS:LOAD-FONT
-   VML-FONTS:GEN-TEXT-TEXTURE))
+	:vml-types))
 
 (in-package :vml-fonts)
 (cl-annot:enable-annot-syntax)
@@ -89,7 +82,7 @@ inprogress to implements :(
   	 (h (sdl:height font-surf))
 	 (temp-surface (sdl:create-surface w h :bpp 32 :pixel-alpha t )))
     (sdl:blit-surface font-surf temp-surface)
-    (make-instance 'text-cache
+    (make-instance 'text-texture-cache
 		   :texture (vml-image:surface-to-texture temp-surface)
 		   :text text
 		   :width w
@@ -100,12 +93,12 @@ inprogress to implements :(
   (let* ((font-surf (gen-text-surface-blend text :font font :color color))
 	 (w (sdl:width font-surf))
 	 (h (sdl:height font-surf))
-	 (text-cache (make-instance 'text-cache
+	 (text-texture-cache (make-instance 'text-texture-cache
 	  			    :texture (vml-image:surface-to-texture font-surf)
 				    :text text
 				    :width w
 				    :height h)))
-    text-cache))
+    text-texture-cache))
 
 (defun gen-text-texture (text &key color
 		 (font lispbuilder-sdl:*default-font*)
