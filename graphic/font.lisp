@@ -27,7 +27,7 @@ To avoid this overhead, memoize surface.
   "generate hash key for surface cache from Color num and Text"
   (format nil "~A:~A~A~A" string (red color) (green color) (blue color)))
 
-(defun gen-text-surface (string func &key 
+(defun generate-text-surface (string func &key 
 				  color surf-cache
 				  (font lispbuilder-sdl:*default-font*))
   (let ((key (generate-font-key string color)))
@@ -41,16 +41,16 @@ To avoid this overhead, memoize surface.
     (gethash key surf-cache)))
 
 
-(defun gen-text-surface-blend (string &key color
+(defun generate-text-surface-blend (string &key color
 					(font lispbuilder-sdl:*default-font*))
   "generate text surface for blend."
-  (gen-text-surface string #'sdl:render-string-blended
+  (generate-text-surface string #'sdl:render-string-blended
 		    :color color :surf-cache *blend-surface-cache* :font font))
 
-(defun gen-text-surface-solid (string &key color
+(defun generate-text-surface-solid (string &key color
 					(font lispbuilder-sdl:*default-font*))
   "generate text surface for solid"
-  (gen-text-surface string #'sdl:render-string-solid
+  (generate-text-surface string #'sdl:render-string-solid
 		    :color color :surf-cache *solid-surface-cache* :font font))
 
 
@@ -75,9 +75,9 @@ inprogress to implements :(
 
 (defparameter *text-texture-cache* (make-hash-table :test 'equal))
 
-(defun gen-text-texture-solid (text &key color 
+(defun generate-text-texture-solid (text &key color 
 				      (font lispbuilder-sdl:*default-font*))
-  (let* ((font-surf (gen-text-surface-solid text :font font :color color))
+  (let* ((font-surf (generate-text-surface-solid text :font font :color color))
 	 (w (sdl:width font-surf))
   	 (h (sdl:height font-surf))
 	 (temp-surface (sdl:create-surface w h :bpp 32 :pixel-alpha t )))
@@ -88,9 +88,9 @@ inprogress to implements :(
 		   :width w
 		   :height h)))
 
-(defun gen-text-texture-blend (text &key color
+(defun generate-text-texture-blend (text &key color
 					(font lispbuilder-sdl:*default-font*))
-  (let* ((font-surf (gen-text-surface-blend text :font font :color color))
+  (let* ((font-surf (generate-text-surface-blend text :font font :color color))
 	 (w (sdl:width font-surf))
 	 (h (sdl:height font-surf))
 	 (text-texture-cache (make-instance 'text-texture-cache
@@ -100,19 +100,19 @@ inprogress to implements :(
 				    :height h)))
     text-texture-cache))
 
-(defun gen-text-texture (text &key color
+(defun generate-text-texture (text &key color
 		 (font lispbuilder-sdl:*default-font*)
 		 (type :blend))
   (case type
-    (:blend (gen-text-texture-blend text :color color :font font))
-    (:solid (gen-text-texture-solid text :color color :font font))))
+    (:blend (generate-text-texture-blend text :color color :font font))
+    (:solid (generate-text-texture-solid text :color color :font font))))
 	    
 @export
 (defun draw-font (text point color
 		  &key (font lispbuilder-sdl:*default-font*) (type :blend))
   (let* ((x (x point))
 	 (y (y point))
-	 (text-texture (gen-text-texture text :color color :font font :type type))
+	 (text-texture (generate-text-texture text :color color :font font :type type))
 	 (w (font-width text-texture))
   	 (h (font-height text-texture)))
     (gl:enable :texture-2d)
