@@ -8,8 +8,14 @@
 (in-package :vml-image)
 (cl-annot:enable-annot-syntax)
 
+
+;;;; Util functions to handling images.
+(defun ceiling-expt (x y)
+  (if (zerop x) x (expt y (ceiling (log x y)))))
+
+@doc "Generate GL's Texture from SDL_Surface."
 @export
-(defun surface-to-texture (surface)
+(defun generate-texture-from-surface (surface)
   (let ((texture (car (gl:gen-textures 1)))
         (w (sdl:width surface))
 	(h (sdl:height surface)))
@@ -21,3 +27,158 @@
      (sdl-base::with-pixel (pixels (sdl:fp surface))
        (sdl-base::pixel-data pixels)))
     texture))
+
+
+@doc "Generate SDL_Surface from File."
+(defun generate-surface-from-file (filename) 
+  (let* ((image (sdl-image:load-image 
+		 (kmrcl:read-file-to-usb8-array filename)))
+	 (surf (sdl:create-surface (sdl:width image)
+				   (sdl:height image)
+				   :bpp 32
+				   :pixel-alpha t)))
+    (sdl:draw-surface-at-* image
+			   0
+			   0
+			   :surface surf)
+    surf))
+
+@doc "Generate SDL_Surface from binary array."
+(defun generate-surface-from-usb8-array (image-array) 
+  (let* ((image (sdl-image:load-image image-array))
+	 (surf (sdl:create-surface (sdl:width image)
+				   (sdl:height image)
+				   :bpp 32
+				   :pixel-alpha t)))
+    (sdl:draw-surface-at-* image
+			   0
+			   0
+			   :surface surf)
+    surf))
+
+;;;; Image cache for SDL_Surface and GL's Texture.
+(defparameter *sdl-surface-cache* (make-array 0
+					      ;; :element-type 'character
+					      :fill-pointer 0
+					      :adjustable t))
+
+(defparameter *gl-texture-cache* (make-array 0
+					     ;; :element-type 'character
+					     :fill-pointer 0
+					     :adjustable t))
+
+
+
+;;;;
+;;;; Module for texture management. 
+;;;; 
+;;;; - If change screen setting(fullscreen -> window,window -> fullscreen),
+;;;; we *must* initialize all textures.
+;;;;
+;;;; - *texture* have all texture data. 
+;;;;   this data include surface cache and gl's texture cache
+;;;;   
+
+(defparameter *texture* nil :documentation "all texture data")
+
+(defun add-new-texture (texture)
+  (check-type texture (and texture (not null)))
+  (vector-push-extend texture *texture*))
+
+(defun get-texture (id)
+  (check-type id (and integer (not null)))
+  (aref *texture* id))
+
+(defclass texture ()
+  ((tex-id :initarg :id :accessor tex-id)
+   (texture :initarg :texture :accessor texture)
+   (surface :initarg :surface :accessor surface)
+   (widht :initarg :width :accessor tex-width)
+   (height :initarg :height :accessor tex-height)))
+
+@export 
+(defun initialize-textures ()
+  (setf *texture* (make-array 0
+			      :element-type 'texture
+			      :fill-pointer 0
+			      :adjustable t)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+@export
+(defun load-image-file (filename base-dir-len)
+  (let ((surface (create-surface-with-alpha
+		  filename))
+	(key (subseq (format nil "~A" filename) base-dir-len)))
+    (setf (gethash key *images*) 
+	  (make-instance 'texture
+			 ;;:texture nil
+			 :texture (generate-texture-from-surface surface)
+			 :surface surface
+			 :width (sdl:width surface)
+			 :height  (sdl:height surface)))
+    (sdl:free surface)
+    (when (equal (gethash key *images*) nil)
+      (format t "error"))))
+
+
+
+@export
+(defun load-image (id filename path)
+  (let ((surface (create-surface-with-alpha
+		  (sdl:create-path filename path))))
+    (setf (gethash id *images*) 
+	  (make-instance 'texture
+			 ;;:texture nil
+			 :texture (generate-texture-from-surface surface)
+			 :surface surface
+			 :width (sdl:width surface)
+			 :height  (sdl:height surface)))
+    (sdl:free surface)
+    (when (equal (gethash id *images*) nil)
+      (format t "error"))))
+
+@export 
+(defun add-image-alias (alias filename)
+  (setf (gethash alias *image-alias*) filename))
+
+
+@export
+(defun image (id)
+  (let ((alias (gethash id *image-alias*)))
+    (cond ((not (eq alias nil))
+	   (gethash alias *images*))
+	  (t
+	   (gethash id *images*)))))
+
+@export
+(defun draw-image (surf x y &key (draw-reverse nil) (width nil) (height nil) (r 1) (g 1) (b 1) (a 1))
+  (let ((w (if width 
+	       width
+	       (tex-width surf)))
+	(h (if height
+	       height
+	       (tex-height surf))))
+    ;;(let ((texture (surface-to-texture (surface surf))))
+    (gl:enable :texture-2d)
+    (gl:bind-texture :texture-2d (texture surf))
+    (gl:color r g b a)
+    (cond
+      ((eq t draw-reverse)
+       (gl:with-primitive :quads
+	 (gl:tex-coord 1 0) (gl:vertex x y 1)
+	 (gl:tex-coord 0 0) (gl:vertex (+ x w) y 1)
+	 (gl:tex-coord 0 1) (gl:vertex (+ x w) (+ y h) 1)
+	 (gl:tex-coord 1 1) (gl:vertex x (+ y h) 1)))
+      (t
+       (gl:with-primitive :quads
+	 (gl:tex-coord 0 0) (gl:vertex x y 1)
+	 (gl:tex-coord 1 0) (gl:vertex (+ x w) y 1)
+	 (gl:tex-coord 1 1) (gl:vertex (+ x w) (+ y h) 1)
+	 (gl:tex-coord 0 1) (gl:vertex x (+ y h) 1))))
+    (gl:disable :texture-2d)
+    (gl:flush)
+    ;; (gl:delete-textures (list texture))
+    ))
+
