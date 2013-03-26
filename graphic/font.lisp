@@ -1,3 +1,11 @@
+;;;;------------------------------------------------------------------------;;;;
+;;;; font.lisp manipulating font drawing 
+;;;;
+;;;; Date: 2013.03.25
+;;;; Author: lambda_sakura(lambda.sakura@gmail.com)
+;;;;
+;;;;------------------------------------------------------------------------;;;;
+
 (in-package :cl-user)
 
 (defpackage vml-fonts

@@ -1,3 +1,11 @@
+;;;;------------------------------------------------------------------------;;;;
+;;;; primitive.lisp drawing primitive.
+;;;;
+;;;; Date: 2013.03.25
+;;;; Author: lambda_sakura(lambda.sakura@gmail.com)
+;;;;
+;;;;------------------------------------------------------------------------;;;;
+
 (in-package :cl-user)
 (defpackage vml-graphics
   (:nicknames :vml-graphics)

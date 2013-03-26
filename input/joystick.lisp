@@ -1,3 +1,11 @@
+;;;;------------------------------------------------------------------------;;;;
+;;;; joystick.lisp manipulating joystick(s)
+;;;;
+;;;; Date: 2013.03.25
+;;;; Author: lambda_sakura(lambda.sakura@gmail.com)
+;;;;
+;;;;------------------------------------------------------------------------;;;;
+
 (defpackage #:vml-joystick
   (:nicknames :joystick)
   (:use #:cl #:cl-user :kmrcl))

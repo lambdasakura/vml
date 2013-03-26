@@ -1,3 +1,18 @@
+;;;;------------------------------------------------------------------------;;;;
+;;;; image.lisp manipulating image(bmp,png) 
+;;;;
+;;;; Date: 2013.03.25
+;;;; Author: lambda_sakura(lambda.sakura@gmail.com)
+;;;;
+;;;;------------------------------------------------------------------------;;;;
+;;;;
+;;;; This file implements image loader which is to load image from file 
+;;;; or stream(unsigned byte array).Loaded image convert to OpenGL texture and
+;;;; SDL Surface.VML maintain loaded image *texture* and texture's id.
+;;;;
+;;;; This file also implements image drawer which is to draw loaded image.
+;;;;
+;;;;------------------------------------------------------------------------;;;;
 (in-package :cl-user)
 (defpackage vml-image
   (:nicknames :vml-image)
@@ -8,11 +23,30 @@
 (in-package :vml-image)
 (cl-annot:enable-annot-syntax)
 
+;;;-----------------------------------------------------------------------------
+;;; Loaded Image and Image cache for SDL_Surface and GL's Texture.
+;;;-----------------------------------------------------------------------------
+(defparameter *sdl-surface-cache* (make-array 0 :fill-pointer 0 :adjustable t)
+  "SDL surface cache")
 
-;;;; Util functions to handling images.
-(defun ceiling-expt (x y)
-  (if (zerop x) x (expt y (ceiling (log x y)))))
+;;;=== Notice ==================================================================
+;;;
+;;; When change screen setting(fullscreen -> window,window -> fullscreen),
+;;; We +must+ to regenerate all textures because GL Texture losted.
+;;;
+;;;=============================================================================
+(defparameter *gl-texture-cache* (make-array 0 :fill-pointer 0 :adjustable t)
+  "GL Texture cache")
 
+;;;
+;;; *texture* have all texture data which include surface 
+;;; cache and gl's texture cache
+;;;
+(defparameter *texture* nil "All texture data")
+
+;;;-----------------------------------------------------------------------------
+;;; image converter functions.
+;;;-----------------------------------------------------------------------------
 @doc "Generate GL's Texture from SDL_Surface."
 @export
 (defun generate-texture-from-surface (surface)
@@ -56,31 +90,9 @@
 			   :surface surf)
     surf))
 
-;;;; Image cache for SDL_Surface and GL's Texture.
-(defparameter *sdl-surface-cache* (make-array 0
-					      ;; :element-type 'character
-					      :fill-pointer 0
-					      :adjustable t))
-
-(defparameter *gl-texture-cache* (make-array 0
-					     ;; :element-type 'character
-					     :fill-pointer 0
-					     :adjustable t))
-
-
-
-;;;;
-;;;; Module for texture management. 
-;;;; 
-;;;; - If change screen setting(fullscreen -> window,window -> fullscreen),
-;;;; we *must* initialize all textures.
-;;;;
-;;;; - *texture* have all texture data. 
-;;;;   this data include surface cache and gl's texture cache
-;;;;   
-
-(defparameter *texture* nil :documentation "all texture data")
-
+;;;-----------------------------------------------------------------------------
+;;; maintain loaded images function
+;;;-----------------------------------------------------------------------------
 (defun add-new-texture (texture)
   (check-type texture (and texture (not null)))
   (vector-push-extend texture *texture*))
@@ -103,9 +115,9 @@
 			      :fill-pointer 0
 			      :adjustable t)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;-----------------------------------------------------------------------------
+;;; Image Loader 
+;;;-----------------------------------------------------------------------------
 @export
 (defun load-image-file (filename base-dir-len)
   (let ((surface (create-surface-with-alpha
@@ -139,28 +151,13 @@
     (when (equal (gethash id *images*) nil)
       (format t "error"))))
 
-@export 
-(defun add-image-alias (alias filename)
-  (setf (gethash alias *image-alias*) filename))
-
-
 @export
-(defun image (id)
-  (let ((alias (gethash id *image-alias*)))
-    (cond ((not (eq alias nil))
-	   (gethash alias *images*))
-	  (t
-	   (gethash id *images*)))))
-
-@export
-(defun draw-image (surf x y &key (draw-reverse nil) (width nil) (height nil) (r 1) (g 1) (b 1) (a 1))
-  (let ((w (if width 
-	       width
-	       (tex-width surf)))
-	(h (if height
-	       height
-	       (tex-height surf))))
-    ;;(let ((texture (surface-to-texture (surface surf))))
+(defun draw-image (surf x y &key (draw-reverse nil)
+			(width nil) 
+			(height nil)
+			(r 1) (g 1) (b 1) (a 1))
+  (let ((w (if width width (tex-width surf)))
+	(h (if height height (tex-height surf))))
     (gl:enable :texture-2d)
     (gl:bind-texture :texture-2d (texture surf))
     (gl:color r g b a)
@@ -178,7 +175,5 @@
 	 (gl:tex-coord 1 1) (gl:vertex (+ x w) (+ y h) 1)
 	 (gl:tex-coord 0 1) (gl:vertex x (+ y h) 1))))
     (gl:disable :texture-2d)
-    (gl:flush)
-    ;; (gl:delete-textures (list texture))
-    ))
+    (gl:flush)))
 

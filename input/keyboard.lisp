@@ -1,3 +1,11 @@
+;;;;------------------------------------------------------------------------;;;;
+;;;; keyboard.lisp manipulating keyboard.
+;;;;
+;;;; Date: 2013.03.25
+;;;; Author: lambda_sakura(lambda.sakura@gmail.com)
+;;;;
+;;;;------------------------------------------------------------------------;;;;
+
 (defpackage #:vml-keyboard
   (:use #:cl #:cl-user :kmrcl))
 (cl-annot:enable-annot-syntax)

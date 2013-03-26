@@ -1,14 +1,13 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; VML System Initialize functions.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;------------------------------------------------------------------------;;;;
+;;;; system.lisp initialize VML and Game Main Loop 
+;;;;
+;;;; Date: 2013.03.25
+;;;; Author: lambda_sakura(lambda.sakura@gmail.com)
+;;;;
+;;;;------------------------------------------------------------------------;;;;
+
 #|
-
-VML System 
-VML Library System Initialize Functions
-
-Author
-lambda_sakura (lambda.sakura@gmail.com)
-
+--------------------------------------------------------------------------------
 Usage:
 
     ;; define main-loop function.
@@ -46,9 +45,9 @@ Usage:
 			     :tex-reload #'reload-textures
 			     :game-init #'game-init)))
 		 (vml-system:game-start vml)))
-    
-|#                                                                                                                                                                                                                                                                                                                           
 
+--------------------------------------------------------------------------------
+|#                                                                                                                                                                                                                                                                                                                           
 (in-package #:cl-user)
 (defpackage :vml-system
   (:documentation "VML System Initialize functions")
@@ -66,12 +65,36 @@ Usage:
 (in-package :vml-system)
 (cl-annot:enable-annot-syntax)
 
-;; follow variables are defined display size.
-;; support 640 x 480 size only.
-;; TODO:Support other size.(1280 x 960 ... etc)
-(defparameter *display-height* 480)
-(defparameter *display-width* 640)
-(defparameter *framerate* 60)
+;;;-----------------------------------------------------------------------------
+;;; Defined display size and Framerate
+;;; Support 640 x 480 size and 60 FPS.
+;;; 
+;;; TODO: Support other size.(1280 x 960 ... etc)
+;;;-----------------------------------------------------------------------------
+(defparameter *display-height* 480 "Display Height")
+(defparameter *display-width* 640 "Display Width")
+(defparameter *framerate* 60 "Framerate(Frame per second)")
+
+
+@doc "To load SDL Library.in Windows,the DLL load from PATH."
+(defun load-dynamic-libs ()
+  (cffi:define-foreign-library sdl
+    (t (:default "SDL")))
+  (cffi:define-foreign-library sdl-image
+    (t (:default "SDL_image")))
+  (cffi:define-foreign-library sdl-gfx
+    (t (:default "SDL_gfx")))
+  (cffi:define-foreign-library sdl-mixer
+    (t (:default "SDL_mixer")))
+  (cffi:define-foreign-library sdl-ttf
+    (t (:default "SDL_ttf")))
+  (cffi:use-foreign-library sdl)
+  (cffi:use-foreign-library sdl-image)
+  (cffi:use-foreign-library sdl-gfx)
+  (cffi:use-foreign-library sdl-ttf)
+  (cffi:use-foreign-library sdl-mixer))
+
+
 @export
 (defclass vml-system ()
   ((game-title :initarg :game-title :initform nil :accessor game-title)
@@ -167,23 +190,6 @@ fullscreen key is *alt + Enter*
 	   (sdl:modifier= '(:sdl-key-mod-ralt)
 			  mod-key))))
 
-@doc "To load SDL Library.in Windows,the DLL load from PATH."
-(defun load-dynamic-libs ()
-  (cffi:define-foreign-library sdl
-    (t (:default "SDL")))
-  (cffi:define-foreign-library sdl-image
-    (t (:default "SDL_image")))
-  (cffi:define-foreign-library sdl-gfx
-    (t (:default "SDL_gfx")))
-  (cffi:define-foreign-library sdl-mixer
-    (t (:default "SDL_mixer")))
-  (cffi:define-foreign-library sdl-ttf
-    (t (:default "SDL_ttf")))
-  (cffi:use-foreign-library sdl)
-  (cffi:use-foreign-library sdl-image)
-  (cffi:use-foreign-library sdl-gfx)
-  (cffi:use-foreign-library sdl-ttf)
-  (cffi:use-foreign-library sdl-mixer))
    
 (defmethod system-initialize ((self vml-system))
   (sdl:show-cursor nil)
@@ -221,6 +227,7 @@ fullscreen key is *alt + Enter*
   (gl:flush)
   (sdl:update-display))
 
+
 @doc "
 Vml's entry function.
 1. initialize vml system and user datas.
@@ -229,7 +236,7 @@ Vml's entry function.
 "
 @export
 (defmethod game-start ((self vml-system))
-  (sdl:with-init (sdl:SDL-INIT-VIDEO 
+  (sdl:with-init (SDL:SDL-INIT-VIDEO 
 		  SDL:SDL-INIT-AUDIO
 		  SDL:SDL-INIT-JOYSTICK)
     (vml-init self)
@@ -279,12 +286,14 @@ Vml's entry function.
     (sdl-mixer:Halt-sample :channel t))
   (sdl-mixer:quit-mixer))
 
-;;; 
+;;;----------------------------------------------------------------------------- 
 ;;; lispbuilder's render_string-* functions are *not* support UTF-8 string.
 ;;; follows functions are fixed this.
-;;; 
+;;;----------------------------------------------------------------------------- 
 
-;;; enter lispbuilder
+;;;-----------------------------------------------------------------------------
+;;;  Enter lispbuilder-sdl
+;;;-----------------------------------------------------------------------------
 (in-package #:lispbuilder-sdl)
 (cl-annot:enable-annot-syntax)
 @export
@@ -345,4 +354,6 @@ Vml's entry function.
     (when cache
       (setf (cached-surface font) surf))
     surf))
-;;; leave lispbuilder
+;;;-----------------------------------------------------------------------------
+;;;  Leave lispbuilder-sdl
+;;;-----------------------------------------------------------------------------
