@@ -15,11 +15,11 @@
 		       :type :solid)
   (vml-fonts:draw-font "日本語表示のテスト(Japanese Font Test)"
 		       (point :x 0 :y 30)
-		       (color :r 255 :g 255 :b 255)
+		       (color :r 0 :g 0 :b 255)
 		       :type :blend)
   (vml-fonts:draw-font "日本語表示のテスト(Japanese Font Test)"
 		       (point :x 0 :y 60)
-		       (color :r 255 :g 255 :b 255)
+		       (color :r 0 :g 0 :b 255)
 		       :type :solid)
   
   ;; (vml-fonts:draw-font "通常描画(Normal)" 0 200 :color (vml-types:color :r 255 :g 0 :b 0))

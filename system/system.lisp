@@ -330,9 +330,9 @@ Vml's entry function.
 				     (if (cffi:foreign-symbol-pointer 
 					  "TTF_glue_RenderUTF8_Solid")
 					 col-struct
-					 (+ (ash (b color) 0)
+					 (+ (ash (b color) 16)
 					    (ash (g color) 8)
-					    (ash (r color) 16)))))))
+					    (ash (r color) 0)))))))
     (when cache
       (setf (cached-surface font) surf))
     surf))
@@ -348,9 +348,9 @@ Vml's entry function.
 				     string
 				     (if (cffi:foreign-symbol-pointer "TTF_glue_RenderUTF8_Blended")
 					 col-struct
-					 (+ (ash (b color) 0)
+					 (+ (ash (b color) 16)
 					    (ash (g color) 8)
-					    (ash (r color) 16)))))))
+					    (ash (r color) 0)))))))
     (when cache
       (setf (cached-surface font) surf))
     surf))

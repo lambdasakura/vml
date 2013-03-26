@@ -45,7 +45,7 @@
 				     (intern (format nil "VML-~A" key) :keyword)))
 			  (point :x (+ 150 (* (floor index 450) 200)) :y (+ 30 (mod index 450)))
 			  (color :r 255 :g 255 :b 0)
-			  :type :solid)
+			  :type :blend)
        ))
 
 ;;; ゲームの終了関数
