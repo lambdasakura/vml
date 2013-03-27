@@ -119,20 +119,28 @@
 ;;; Image Loader 
 ;;;-----------------------------------------------------------------------------
 @export
-(defun load-image-file (filename base-dir-len)
-  (let ((surface (create-surface-with-alpha
-		  filename))
-	(key (subseq (format nil "~A" filename) base-dir-len)))
-    (setf (gethash key *images*) 
-	  (make-instance 'texture
-			 ;;:texture nil
-			 :texture (generate-texture-from-surface surface)
-			 :surface surface
-			 :width (sdl:width surface)
-			 :height  (sdl:height surface)))
-    (sdl:free surface)
-    (when (equal (gethash key *images*) nil)
-      (format t "error"))))
+(defun load-image-file (filename)
+  (let ((surface (generate-surface-from-file filename)))
+    (add-new-texture (make-instance 'texture
+				    :texture (generate-texture-from-surface surface)
+				    :surface surface
+				    :width (sdl:width surface)
+				    :height  (sdl:height surface)))))
+;;@export
+;; (defun load-image-file (filename base-dir-len)
+;;   (let ((surface (create-surface-with-alpha
+;; 		  filename))
+;; 	(key (subseq (format nil "~A" filename) base-dir-len)))
+;;     (setf (gethash key *images*) 
+;; 	  (make-instance 'texture
+;; 			 ;;:texture nil
+;; 			 :texture (generate-texture-from-surface surface)
+;; 			 :surface surface
+;; 			 :width (sdl:width surface)
+;; 			 :height  (sdl:height surface)))
+;;     (sdl:free surface)
+;;     (when (equal (gethash key *images*) nil)
+;;       (format t "error"))))
 
 
 
@@ -152,12 +160,13 @@
       (format t "error"))))
 
 @export
-(defun draw-image (surf x y &key (draw-reverse nil)
+(defun draw-image (id x y &key (draw-reverse nil)
 			(width nil) 
 			(height nil)
 			(r 1) (g 1) (b 1) (a 1))
-  (let ((w (if width width (tex-width surf)))
-	(h (if height height (tex-height surf))))
+  (let* ((surf (get-texture id))
+	 (w (if width width (tex-width surf)))
+	 (h (if height height (tex-height surf))))
     (gl:enable :texture-2d)
     (gl:bind-texture :texture-2d (texture surf))
     (gl:color r g b a)
@@ -176,4 +185,7 @@
 	 (gl:tex-coord 0 1) (gl:vertex x (+ y h) 1))))
     (gl:disable :texture-2d)
     (gl:flush)))
+
+
+
 
