@@ -322,6 +322,7 @@ Vml's entry function.
 (defmethod _render-string-solid_ ((string string) (font ttf-font)
 				  (color color) free cache)
   (let ((surf nil))
+    
     (with-foreign-color-copy (col-struct color)
       (setf surf (make-instance 'surface
 				:fp (sdl-ttf-cffi::render-utf8-solid 
@@ -330,9 +331,10 @@ Vml's entry function.
 				     (if (cffi:foreign-symbol-pointer 
 					  "TTF_glue_RenderUTF8_Solid")
 					 col-struct
-					 (+ (ash (b color) 16)
+					 (+ (ash 255 24)
+					    (ash (r color) 16)
 					    (ash (g color) 8)
-					    (ash (r color) 0)))))))
+					    (ash (b color) 0)))))))
     (when cache
       (setf (cached-surface font) surf))
     surf))
@@ -346,11 +348,13 @@ Vml's entry function.
 				:fp (sdl-ttf-cffi::render-utf8-blended 
 				     (fp font)
 				     string
-				     (if (cffi:foreign-symbol-pointer "TTF_glue_RenderUTF8_Blended")
+				     (if (cffi:foreign-symbol-pointer 
+					  "TTF_glue_RenderUTF8_Blended")
 					 col-struct
-					 (+ (ash (b color) 16)
+					 (+ (ash (a color) 24)
+					    (ash (r color) 16)
 					    (ash (g color) 8)
-					    (ash (r color) 0)))))))
+					    (ash (b color) 0)))))))
     (when cache
       (setf (cached-surface font) surf))
     surf))

@@ -36,8 +36,7 @@
   	 (height (sdl:height text-surface))
 	 (temp-surface (sdl:create-surface width
 					   height 
-					   :bpp 32 
-					   ;; :pixel-alpha t
+					   :bpp 32
 					   )))
     (sdl:blit-surface text-surface temp-surface)
     text-surface))
@@ -54,10 +53,11 @@
   	 (height (sdl:height text-surface))
 	 (temp-surface (sdl:create-surface width
 					   height 
-					   :bpp 32 
-					   :pixel-alpha t )))
+					   :pixel-alpha t
+					   :bpp 32)))
     (sdl:blit-surface text-surface temp-surface)
-    temp-surface))
+    (sdl:convert-to-display-format 
+     :surface temp-surface)))
 
 (defun generate-text-surface (text &key color
 		 (font lispbuilder-sdl:*default-font*)
