@@ -1,3 +1,11 @@
+;;;;------------------------------------------------------------------------;;;;
+;;;; types.lisp drawing primitive.
+;;;;
+;;;; Date: 2013.03.31
+;;;; Author: lambda_sakura(lambda.sakura@gmail.com)
+;;;;
+;;;;------------------------------------------------------------------------;;;;
+
 (in-package #:cl-user)
 (defpackage :vml-types
   (:documentation "Types in VML System")

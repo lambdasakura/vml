@@ -11,16 +11,12 @@
   	   :components 
   	   ((:file "keyboard")
   	    (:file "joystick")))
-
    (:module music
 	     :components 
-  	    ((:file "packages")
-  	     (:file "music" :depends-on ("packages"))
-  	    ))
+	     ((:file "music")))
    (:module sound
   	    :components 
-  	    ((:file "packages")
-  	     (:file "sound" :depends-on ("packages"))))
+  	    ((:file "sound")))
    (:module graphic
   	    :components 
   	    ((:file "primitive")

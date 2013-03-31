@@ -5,7 +5,8 @@
 ;;;; Author: lambda_sakura(lambda.sakura@gmail.com)
 ;;;;
 ;;;;------------------------------------------------------------------------;;;;
-
+;;;; This file implements draw primitive function.
+;;;;------------------------------------------------------------------------;;;;
 (in-package :cl-user)
 (defpackage vml-graphics
   (:nicknames :vml-graphics)

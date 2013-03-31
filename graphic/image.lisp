@@ -50,6 +50,7 @@
 @doc "Generate GL's Texture from SDL_Surface."
 @export
 (defun generate-texture-from-surface (surface)
+  (check-type surface sdl:surface)
   (let ((texture (car (gl:gen-textures 1)))
         (w (sdl:width surface))
 	(h (sdl:height surface)))
@@ -93,6 +94,13 @@
 ;;;-----------------------------------------------------------------------------
 ;;; maintain loaded images function
 ;;;-----------------------------------------------------------------------------
+(defclass texture ()
+  ((tex-id :initarg :id :accessor tex-id)
+   (texture :initarg :texture :accessor texture)
+   (surface :initarg :surface :accessor surface)
+   (widht :initarg :width :accessor tex-width)
+   (height :initarg :height :accessor tex-height)))
+
 (defun add-new-texture (texture)
   (check-type texture (and texture (not null)))
   (vector-push-extend texture *texture*))
@@ -101,12 +109,7 @@
   (check-type id (and integer (not null)))
   (aref *texture* id))
 
-(defclass texture ()
-  ((tex-id :initarg :id :accessor tex-id)
-   (texture :initarg :texture :accessor texture)
-   (surface :initarg :surface :accessor surface)
-   (widht :initarg :width :accessor tex-width)
-   (height :initarg :height :accessor tex-height)))
+
 
 @export 
 (defun initialize-textures ()
@@ -120,6 +123,7 @@
 ;;;-----------------------------------------------------------------------------
 @export
 (defun load-image-file (filename)
+  (check-type filename (and string (not null)))
   (let ((surface (generate-surface-from-file filename)))
     (add-new-texture (make-instance 'texture
 				    :texture (generate-texture-from-surface surface)
@@ -146,6 +150,8 @@
 
 @export
 (defun load-image (id filename path)
+  (check-type id (and integer (not null)))
+  (check-type filename (and string (not null)))
   (let ((surface (create-surface-with-alpha
 		  (sdl:create-path filename path))))
     (setf (gethash id *images*) 
@@ -185,7 +191,4 @@
 	 (gl:tex-coord 0 1) (gl:vertex x (+ y h) 1))))
     (gl:disable :texture-2d)
     (gl:flush)))
-
-
-
 

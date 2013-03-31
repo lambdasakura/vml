@@ -31,5 +31,3 @@
     ;;; ゲーム実行
     (vml-system:game-start vml)))
 
-;;; ゲーム実行開始
-(main)

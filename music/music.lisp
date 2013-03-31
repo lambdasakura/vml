@@ -1,3 +1,23 @@
+;;;;------------------------------------------------------------------------;;;;
+;;;; music.lisp drawing primitive.
+;;;;
+;;;; Date: 2013.03.31
+;;;; Author: lambda_sakura(lambda.sakura@gmail.com)
+;;;;
+;;;;------------------------------------------------------------------------;;;;
+(in-package #:cl-user)
+(defpackage #:vml-music
+  (:use :cl
+	:cl-user
+	:kmrcl
+	)
+  (:export
+   :load-music-data
+   :play-music
+   :pause-music
+   :stop-music
+   :open-music
+   :close-music))
 (in-package :vml-music)
 (cl-annot:enable-annot-syntax)
 
@@ -16,6 +36,7 @@
     (setf (playing-music self) music-obj)
     (setf (playing-obj self) music-binary)))
 
+@export
 (defun open-music ()
   (setf *musics* nil)
   (setf *play-state* (make-instance 'play-state))
@@ -28,6 +49,7 @@
 	(sdl-mixer:OPEN-AUDIO :chunksize 2048
 			      :enable-callbacks nil)))
 
+@export
 (defun close-music ()
   (sdl-mixer:halt-Music)
   (setf *musics* nil)
