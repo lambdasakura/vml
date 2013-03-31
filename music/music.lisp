@@ -10,19 +10,13 @@
   (:use :cl
 	:cl-user
 	:kmrcl
-	)
-  (:export
-   :load-music-data
-   :play-music
-   :pause-music
-   :stop-music
-   :open-music
-   :close-music))
+	))
 (in-package :vml-music)
 (cl-annot:enable-annot-syntax)
 
 @export
 (defparameter *musics* (make-hash-table :test 'equal))
+(defparameter *mixer-opened* nil)
 (defparameter *play-state* nil)
 
 (defclass play-state ()
@@ -66,6 +60,7 @@
 	(read-file-to-usb8-array filename)))
 
 (defun music (id)
+  (declare (ignore id))
   ;; (sdl-mixer:load-music 
   ;;  (gethash id *musics*))
   )
