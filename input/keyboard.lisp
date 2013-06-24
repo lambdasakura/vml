@@ -6,15 +6,14 @@
 ;;;;
 ;;;;------------------------------------------------------------------------;;;;
 
-(defpackage #:vml-keyboard
-  (:use #:cl #:cl-user :kmrcl))
-(cl-annot:enable-annot-syntax)
-(in-package  #:vml-keyboard)
-
 #|
 
- keyboard wrapper 
+VML-Keyboard
 ------------------
+
+キーボードの状態を管理する。
+key-pressed,key-pushedで現在のキーボードの状態を取得できる。
+
 
 |#
 ;; (defconstant keyboard-list 
@@ -31,76 +30,61 @@
 ;;     :vml-key-rightparen :vml-key-asterisk :vml-key-plus :vml-key-comma
 ;;     :vml-key-minus :vml-key-period :vml-key-slash :vml-key-delete
 ;;     :vml-key-up :vml-key-down :vml-key-left :vml-key-right))
-
 #|
-current-device-status
-----------------------
 
-to management physical keyboard state.
-sdl-main-loop(vml:game-start) update this table.
-
-up-key & down-key
------------------
-
-these functions are called at key event.
-update device state.
 |#
-(defparameter *current-device-status* 
-  (make-hash-table :test 'equal))
 
-@export
-(defun init-current-device-status ()
-  (setf *current-device-status* (make-hash-table :test 'equal)))
+(defpackage #:vml-keyboard
+  (:use #:cl #:cl-user :kmrcl)
+  (:export :set-key-up
+	   :set-key-down
+	   :keyboard-init
+	   :keyboard-update
+	   :key-pressed
+	   :key-pushed))
 
-@export
-(defun up-key (key)
-  (setf (gethash (sdl-key-name->vml-key-name key) 
-		 *current-device-status*)
-	nil))
+(in-package  #:vml-keyboard)
 
-@export
-(defun down-key (key)
-  (setf (gethash (sdl-key-name->vml-key-name key)
-		 *current-device-status*)
-	t))
-
-(defun sdl-key-name->vml-key-name (sdl-key-name)
-  (intern (cl-ppcre:regex-replace
-	   "SDL"
-	   (format nil "~A" sdl-key-name)
-	   "VML") :keyword))
-
+(defparameter *current-device-status* nil)
+(defparameter *keyboard-state* nil)
 
 (defclass keyboard-state ()
-  ((current :initform (make-hash-table :test 'equal)
-	    :accessor current)
-   (prev :initform (make-hash-table :test 'equal)
-	 :accessor prev)))
+  ((current :initform (make-hash-table :test 'equal) :accessor current)
+   (prev :initform (make-hash-table :test 'equal) :accessor prev)))
 
-(defparameter *keyboard-state* 
-  (make-instance 'keyboard-state))
+(defun sdl-key-name->vml-key-name (sdl-key-name)
+  "SDLのキーネームからVMLのキーネームに変換する"
+  (intern (cl-ppcre:regex-replace "SDL" (format nil "~A" sdl-key-name) "VML") :keyword))
 
-@export 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; User API
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun set-key-up (key)
+  "keyのボタン押下状態を変更する"
+  (setf (gethash (sdl-key-name->vml-key-name key) *current-device-status*) nil))
+
+(defun set-key-down (key)
+  "keyのボタン押下状態を変更する"
+  (setf (gethash (sdl-key-name->vml-key-name key) *current-device-status*) t))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; System API
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun keyboard-init ()
+  "キーボードの状態を初期化する"
+  (setf *keyboard-state* (make-instance 'keyboard-state))  
+  (setf *current-device-status* (make-hash-table :test 'equal)))
+
 (defun keyboard-update ()
-  (setf (prev *keyboard-state*)
-	(alexandria:copy-hash-table 
-	 (current *keyboard-state*)))
-  (setf (current *keyboard-state*)
-	(alexandria:copy-hash-table 
-	 *current-device-status*)))
+  "各フレームごとに呼び出されるキーボード更新関数"
+  (setf (prev *keyboard-state*) (alexandria:copy-hash-table (current *keyboard-state*)))
+  (setf (current *keyboard-state*) (alexandria:copy-hash-table *current-device-status*)))
 
-@export
-(defun keyboard-pressed (button)
-  (gethash button (current *keyboard-state*)))
+(defun key-pressed (key)
+  "指定されたbuttonが現在押されているかを判定する"
+  (gethash key (current *keyboard-state*)))
 
-@export
-(defun keyboard-pushed (button)
-  (and (eq (gethash button (prev *keyboard-state*)) nil)
-       (eq (gethash button (current *keyboard-state*)) t)))
-
-@export
-(defun init-keyboard ()
-  (setf *keyboard-state* 
-	(make-instance 'keyboard-state))  
-  (setf *current-device-status* 
-	(make-hash-table :test 'equal)))
+(defun key-pushed (key)
+  "指定されたbuttonが今押されたかを判定する"
+  (and  (eq (gethash key (prev *keyboard-state*)) nil)
+	(eq (gethash key (current *keyboard-state*)) t) ))
