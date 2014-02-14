@@ -36,7 +36,7 @@
   (declare (ignore arg))
   ;;  Joystickのイベントを受け取れるようにSDLの関数をcall
   (sdl-cffi::sdl-joystick-event-state sdl-cffi::sdl-enable)
-  (let ((num-joysticks (sdl:num-joysticks))
+  (let ((num-joysticks (sdl:num-joysticks)))
 	;; ジョイスティックの数を登録
 	(setf (num-joysticks self) num-joysticks)
 	
@@ -44,8 +44,8 @@
 	(cond ((> num-joysticks 0)
 	       (setf (joystick self)
 		     (loop for i=0 to num-joysticks
-			collect (device-info (make-instance 'joystick-device-info :index i))))
-	       (t nil))))))
+			collect (make-instance 'joystick))))
+	       (t nil))))
 
 (defun close-joystick (joystick)
   (when (> (sdl-cffi::sdl-joystick-opened (joystick-index joystick)) 0)
@@ -66,7 +66,7 @@
 (defun handle-button-release-event (button index)
   (button-release *joystick-manager* button index))
 
-(defmethod update-prev-and-current ((self joystick-state) key)
+(defmethod update-prev-and-current ((self joystick) key)
   (let ((state (state self))
 	(pushed (pushed self))
 	(press (press self))
