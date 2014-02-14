@@ -74,7 +74,7 @@ Usage:
 (defparameter *display-height* 480 "Display Height")
 (defparameter *display-width* 640 "Display Width")
 (defparameter *framerate* 60 "Framerate(Frame per second)")
-
+(defparameter *game-stopped* t)
 
 @doc "To load SDL Library.in Windows,the DLL load from PATH."
 (defun load-dynamic-libs ()
@@ -246,7 +246,7 @@ Vml's entry function.
       (:MOUSE-BUTTON-DOWN-EVENT (:BUTTON BUTTON :STATE STATE :X X :Y Y) )
       (:MOUSE-BUTTON-UP-EVENT (:BUTTON BUTTON :STATE STATE :X X :Y Y) ) 
       (:KEY-DOWN-EVENT (:KEY KEY :MOD-KEY mod-key)  
-		       (vml-keyboard:down-key key)
+		       (vml-keyboard:set-key-down key)
 		       (when (fullscreen-key-press-p key mod-key)
 			 (toggle-fullscreen))
 		       (when (game-quit-key-press-p key mod-key)
@@ -256,7 +256,7 @@ Vml's entry function.
 				(setf *game-stopped* nil))
 			       ((eql *game-stopped* nil)
 				(setf *game-stopped* t)))))
-      (:KEY-UP-EVENT (:KEY KEY) (up-key key))
+      (:KEY-UP-EVENT (:KEY KEY) (vml-keyboard:set-key-up key))
       (:JOY-AXIS-MOTION-EVENT 
        (:WHICH WHICH :AXIS AXIS :VALUE VALUE )
        (vml-joystick:handle-cursor-event axis value which))

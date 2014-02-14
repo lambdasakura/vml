@@ -57,7 +57,7 @@
      (alpha :initform nil :initarg :a :accessor alpha)))
 
 @export
-(defun color (&key (r 0) (g 0) (b 0) (a nil))
+(defun color (&key (r 0) (g 0) (b 0) (a 255))
   (make-instance 'color :r r :g g :b  b :a a))
 
 @export

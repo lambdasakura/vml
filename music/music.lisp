@@ -91,7 +91,7 @@
   "指定されたidの音楽データを次に再生される音楽データとして読み込む"
   (mv-bind (music-obj music-binary) (sdl-mixer:load-music (music id))
     (setf (playing-music self) music-obj)
-    (setf (playing-obj self) music-binary))))
+    (setf (playing-obj self) music-binary)))
 
 (defmethod stop-music-to-sdl-mixer ((self play-state))
   (sdl-mixer:pause-Music)
@@ -99,8 +99,7 @@
 
 (defun play-music (id)
   (when (not (eq (playing-id *play-state*) id))
-    (setf (playing *play-state*) nil)
-    (stop-music-to-sdl-mixer *player-state*))
+    (setf (playing *play-state*) nil))
   
   (when (eq (playing *play-state*) nil)
     (setf (playing *play-state*) t)

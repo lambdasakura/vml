@@ -35,15 +35,19 @@ key-pressed,key-pushedで現在のキーボードの状態を取得できる。
 |#
 
 (defpackage #:vml-keyboard
-  (:use #:cl #:cl-user :kmrcl)
+  (:use :cl
+	:cl-annot
+	:cl-user
+	:kmrcl)
   (:export :set-key-up
 	   :set-key-down
-	   :keyboard-init
+	   :init-keyboard
 	   :keyboard-update
 	   :key-pressed
 	   :key-pushed))
 
 (in-package  #:vml-keyboard)
+(cl-annot:enable-annot-syntax)
 
 (defparameter *current-device-status* nil)
 (defparameter *keyboard-state* nil)
@@ -59,10 +63,12 @@ key-pressed,key-pushedで現在のキーボードの状態を取得できる。
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; User API
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+@export
 (defun set-key-up (key)
   "keyのボタン押下状態を変更する"
   (setf (gethash (sdl-key-name->vml-key-name key) *current-device-status*) nil))
 
+@export
 (defun set-key-down (key)
   "keyのボタン押下状態を変更する"
   (setf (gethash (sdl-key-name->vml-key-name key) *current-device-status*) t))
@@ -70,20 +76,24 @@ key-pressed,key-pushedで現在のキーボードの状態を取得できる。
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; System API
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun keyboard-init ()
+@export
+(defun init-keyboard ()
   "キーボードの状態を初期化する"
   (setf *keyboard-state* (make-instance 'keyboard-state))  
   (setf *current-device-status* (make-hash-table :test 'equal)))
 
+@export
 (defun keyboard-update ()
   "各フレームごとに呼び出されるキーボード更新関数"
   (setf (prev *keyboard-state*) (alexandria:copy-hash-table (current *keyboard-state*)))
   (setf (current *keyboard-state*) (alexandria:copy-hash-table *current-device-status*)))
 
+@export
 (defun key-pressed (key)
   "指定されたbuttonが現在押されているかを判定する"
   (gethash key (current *keyboard-state*)))
 
+@export
 (defun key-pushed (key)
   "指定されたbuttonが今押されたかを判定する"
   (and  (eq (gethash key (prev *keyboard-state*)) nil)
