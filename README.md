@@ -10,6 +10,21 @@ VMLはCommon Lispのゲームライブラリです。基本的に2Dゲームで�
 VMLはlispbuilder-sdlが使える環境を想定しています。
 lispbuilder-sdlのインストールは面倒なので、[このページ](https://code.google.com/p/lispbuilder/wiki/DownloadInstallationIntro)を参考にインストールしてください。
 
+### 利用しているライブラリ一覧
+
+* lispbuilder-sdl
+* lispbuilder-sdl-gfx
+* lispbuilder-sdl-image
+* lispbuilder-sdl-ttf
+* lispbuilder-sdl-mixer
+* cl-ppcre
+* cl-annot
+* cl-test-more
+* cl-opengl
+* cl-store
+* cl-fad
+* kmrcl
+
 ### VMLのインストール方法
 
 quicklispでインストールできるようにしたいですが、まだ登録依頼も行なっていないので、
