@@ -1,5 +1,5 @@
 ;;;;------------------------------------------------------------------------;;;;
-;;;; system.lisp initialize VML and Game Main Loop 
+;;;; system.lisp initialize VML and Game Main Loop
 ;;;;
 ;;;; Date: 2013.03.25
 ;;;; Author: lambda_sakura(lambda.sakura@gmail.com)
@@ -39,28 +39,28 @@ Usage:
 
     ;; to start game
     (defun main ()
-	   (let ((vml (make-instance 'vml-system:vml-system 
-			     :game-main #'game-main
-			     :game-quit #'game-quit
-			     :tex-reload #'reload-textures
-			     :game-init #'game-init)))
-		 (vml-system:game-start vml)))
+           (let ((vml (make-instance 'vml-system:vml-system
+                             :game-main #'game-main
+                             :game-quit #'game-quit
+                             :tex-reload #'reload-textures
+                             :game-init #'game-init)))
+                 (vml-system:game-start vml)))
 
 --------------------------------------------------------------------------------
-|#                                                                                                                                                                                                                                                                                                                           
+|#
 (in-package #:cl-user)
 (defpackage :vml-system
   (:documentation "VML System Initialize functions")
   (:use :cl
-	:cl-annot
-	:cl-annot.class
-	:cl-annot.doc
-	:cl-store
-	:cl-fad
-	:vml-fonts
-	:vml-graphics
-	:vml-keyboard
-	:vml-joystick)
+        :cl-annot
+        :cl-annot.class
+        :cl-annot.doc
+        :cl-store
+        :cl-fad
+        :vml-fonts
+        :vml-graphics
+        :vml-keyboard
+        :vml-joystick)
   (:nicknames :vml-system))
 (in-package :vml-system)
 (cl-annot:enable-annot-syntax)
@@ -68,7 +68,7 @@ Usage:
 ;;;-----------------------------------------------------------------------------
 ;;; Defined display size and Framerate
 ;;; Support 640 x 480 size and 60 FPS.
-;;; 
+;;;
 ;;; TODO: Support other size.(1280 x 960 ... etc)
 ;;;-----------------------------------------------------------------------------
 (defparameter *display-height* 480 "Display Height")
@@ -117,21 +117,21 @@ Usage:
 
 (defun toggle-fullscreen ()
   (cond ((eql *fullscreen* t)
-	 (setf *fullscreen* nil)
-	 (change-window-mode))
-	((eql *fullscreen* nil)
-	 (setf *fullscreen* t)
-	 (change-fullscreen))))
+         (setf *fullscreen* nil)
+         (change-window-mode))
+        ((eql *fullscreen* nil)
+         (setf *fullscreen* t)
+         (change-fullscreen))))
 
 @doc "change screen to fullscreen.
 *notice* if change screen,you should reload textures."
 (defmethod change-fullscreen ((self vml-system))
   (sdl:window *display-width* *display-height* :fullscreen t
-	      :opengl-attributes '((:SDL-GL-DOUBLEBUFFER 1))
-	      :BPP 24 
-	      :icon-caption (game-title self)
-	      :title-caption (game-title self)
-	      :opengl t)
+              :opengl-attributes '((:SDL-GL-DOUBLEBUFFER 1))
+              :BPP 24
+              :icon-caption (game-title self)
+              :title-caption (game-title self)
+              :opengl t)
   (gl:clear :color-buffer-bit :depth-buffer-bit)
   (gl:clear-color 0.0 0.0 0.0  1.00)
   (gl:viewport 0 0 *display-width* *display-height*)
@@ -150,10 +150,10 @@ Usage:
 *notice* if change screen,you should reload textures."
 (defmethod change-window-mode ((self vml-system))
   (sdl:window *display-width* *display-height*
-	      :opengl-attributes '((:SDL-GL-DOUBLEBUFFER 1))
-	      :BPP 24 :opengl t
-	      :icon-caption (game-title self)
-	      :title-caption (game-title self) )
+              :opengl-attributes '((:SDL-GL-DOUBLEBUFFER 1))
+              :BPP 24 :opengl t
+              :icon-caption (game-title self)
+              :title-caption (game-title self) )
   (gl:clear :color-buffer-bit :depth-buffer-bit)
   (gl:clear-color 0.0 0.0 0.0  1.00)
   (gl:viewport 0 0 *display-width* *display-height*)
@@ -170,35 +170,35 @@ Usage:
 
 @doc "
 return 't if key to game-quit pressed.
-game-quit key is *alt + F4* 
+game-quit key is *alt + F4*
 "
 (defun game-quit-key-press-p (key mod-key)
-  (and (eql key :SDL-KEY-F4)  
+  (and (eql key :SDL-KEY-F4)
        (or (sdl:modifier= '(:sdl-key-mod-ralt)
-			  mod-key)
-	   (sdl:modifier= '(:sdl-key-mod-lalt)
-			  mod-key))))
+                          mod-key)
+           (sdl:modifier= '(:sdl-key-mod-lalt)
+                          mod-key))))
 
 @doc "
 return 't if key to fullscreen-key pressed.
-fullscreen key is *alt + Enter* 
+fullscreen key is *alt + Enter*
 "
 (defun fullscreen-key-press-p (key mod-key)
-  (and (eql key :SDL-KEY-RETURN)  
+  (and (eql key :SDL-KEY-RETURN)
        (or (sdl:modifier= '(:sdl-key-mod-lalt)
-			  mod-key)
-	   (sdl:modifier= '(:sdl-key-mod-ralt)
-			  mod-key))))
+                          mod-key)
+           (sdl:modifier= '(:sdl-key-mod-ralt)
+                          mod-key))))
 
-   
+
 (defmethod system-initialize ((self vml-system))
   (sdl:show-cursor nil)
   (sdl:window *display-width*
-	      *display-height*
-	      :bpp 24 :opengl t 
-	      :icon-caption (game-title self)
-	      :title-caption (game-title self)
-	      :opengl-attributes '((:SDL-GL-DOUBLEBUFFER 1)))
+              *display-height*
+              :bpp 24 :opengl t
+              :icon-caption (game-title self)
+              :title-caption (game-title self)
+              :opengl-attributes '((:SDL-GL-DOUBLEBUFFER 1)))
   (gl:viewport 0 0 *display-width* *display-height*)
   (sdl:disable-key-repeat)
   (setf (sdl:frame-rate) *framerate*))
@@ -236,45 +236,45 @@ Vml's entry function.
 "
 @export
 (defmethod game-start ((self vml-system))
-  (sdl:with-init (SDL:SDL-INIT-VIDEO 
-		  SDL:SDL-INIT-AUDIO
-		  SDL:SDL-INIT-JOYSTICK)
+  (sdl:with-init (SDL:SDL-INIT-VIDEO
+                  SDL:SDL-INIT-AUDIO
+                  SDL:SDL-INIT-JOYSTICK)
     (vml-init self)
     (funcall (game-init-func self))
     (sdl:with-events ()
       (:quit-event () (funcall (game-quit-func self)) t)
       (:MOUSE-BUTTON-DOWN-EVENT (:BUTTON BUTTON :STATE STATE :X X :Y Y) )
-      (:MOUSE-BUTTON-UP-EVENT (:BUTTON BUTTON :STATE STATE :X X :Y Y) ) 
-      (:KEY-DOWN-EVENT (:KEY KEY :MOD-KEY mod-key)  
-		       (vml-keyboard:down-key key)
-		       (when (fullscreen-key-press-p key mod-key)
-			 (toggle-fullscreen))
-		       (when (game-quit-key-press-p key mod-key)
-			 (SDL:PUSH-QUIT-EVENT))
-		       (WHEN (eql KEY :SDL-KEY-ESCAPE)  
-			 (cond ((eql *game-stopped* t)
-				(setf *game-stopped* nil))
-			       ((eql *game-stopped* nil)
-				(setf *game-stopped* t)))))
+      (:MOUSE-BUTTON-UP-EVENT (:BUTTON BUTTON :STATE STATE :X X :Y Y) )
+      (:KEY-DOWN-EVENT (:KEY KEY :MOD-KEY mod-key)
+                       (vml-keyboard:down-key key)
+                       (when (fullscreen-key-press-p key mod-key)
+                         (toggle-fullscreen))
+                       (when (game-quit-key-press-p key mod-key)
+                         (SDL:PUSH-QUIT-EVENT))
+                       (WHEN (eql KEY :SDL-KEY-ESCAPE)
+                         (cond ((eql *game-stopped* t)
+                                (setf *game-stopped* nil))
+                               ((eql *game-stopped* nil)
+                                (setf *game-stopped* t)))))
       (:KEY-UP-EVENT (:KEY KEY) (up-key key))
-      (:JOY-AXIS-MOTION-EVENT 
+      (:JOY-AXIS-MOTION-EVENT
        (:WHICH WHICH :AXIS AXIS :VALUE VALUE )
        (vml-joystick:handle-cursor-event axis value which))
       (:JOY-BUTTON-DOWN-EVENT
-       (:WHICH WHICH :BUTTON BUTTON :STATE STATE)  
+       (:WHICH WHICH :BUTTON BUTTON :STATE STATE)
        (vml-joystick:handle-button-press-event button which))
       (:JOY-BUTTON-UP-EVENT
-       (:WHICH WHICH :BUTTON BUTTON :STATE STATE)  
+       (:WHICH WHICH :BUTTON BUTTON :STATE STATE)
        (vml-joystick:handle-button-release-event button which))
-      (:IDLE () 
-	     ;; (vml-joystick:joystick-update)
-	     (vml-keyboard:keyboard-update)
-	     #+my-game-debug
-	     (let ((connection
-	     	    (or swank::*emacs-connection* (swank::default-connection))))
-	       (when (and connection (not (eql swank:*communication-style* :spawn)))
-	     	 (swank::handle-requests connection t)))
-	     (vml-system-game-main self)))))
+      (:IDLE ()
+             ;; (vml-joystick:joystick-update)
+             (vml-keyboard:keyboard-update)
+             #+my-game-debug
+             (let ((connection
+                    (or swank::*emacs-connection* (swank::default-connection))))
+               (when (and connection (not (eql swank:*communication-style* :spawn)))
+                 (swank::handle-requests connection t)))
+             (vml-system-game-main self)))))
 
 
 (defun clean-up ()
@@ -286,10 +286,10 @@ Vml's entry function.
     (sdl-mixer:Halt-sample :channel t))
   (sdl-mixer:quit-mixer))
 
-;;;----------------------------------------------------------------------------- 
+;;;-----------------------------------------------------------------------------
 ;;; lispbuilder's render_string-* functions are *not* support UTF-8 string.
 ;;; follows functions are fixed this.
-;;;----------------------------------------------------------------------------- 
+;;;-----------------------------------------------------------------------------
 
 ;;;-----------------------------------------------------------------------------
 ;;;  Enter lispbuilder-sdl
@@ -297,8 +297,8 @@ Vml's entry function.
 (in-package #:lispbuilder-sdl)
 (cl-annot:enable-annot-syntax)
 @export
-(defmethod _render-string-shaded_ ((string string) (fg-color color) 
-				   (bg-color color) (font ttf-font) free cache)
+(defmethod _render-string-shaded_ ((string string) (fg-color color)
+                                   (bg-color color) (font ttf-font) free cache)
   (let ((surf nil))
     (with-foreign-color-copy (fg-struct fg-color)
       (with-foreign-color-copy (bg-struct bg-color)
@@ -311,50 +311,50 @@ Vml's entry function.
                       (+ (ash (b bg-color) 16)
                          (ash (g bg-color) 8)
                          (r bg-color))))
-          (setf surf (make-instance 'surface 
-				    :fp (sdl-ttf-cffi::render-utf8-shaded 
-					 (fp font) string fg bg))))))
+          (setf surf (make-instance 'surface
+                                    :fp (sdl-ttf-cffi::render-utf8-shaded
+                                         (fp font) string fg bg))))))
     (when cache
       (setf (cached-surface font) surf))
     surf))
 
 @export
 (defmethod _render-string-solid_ ((string string) (font ttf-font)
-				  (color color) free cache)
+                                  (color color) free cache)
   (let ((surf nil))
-    
+
     (with-foreign-color-copy (col-struct color)
       (setf surf (make-instance 'surface
-				:fp (sdl-ttf-cffi::render-utf8-solid 
-				     (fp font)
-				     string
-				     (if (cffi:foreign-symbol-pointer 
-					  "TTF_glue_RenderUTF8_Solid")
-					 col-struct
-					 (+ (ash 255 24)
-					    (ash (r color) 16)
-					    (ash (g color) 8)
-					    (ash (b color) 0)))))))
+                                :fp (sdl-ttf-cffi::render-utf8-solid
+                                     (fp font)
+                                     string
+                                     (if (cffi:foreign-symbol-pointer
+                                          "TTF_glue_RenderUTF8_Solid")
+                                         col-struct
+                                         (+ (ash 255 24)
+                                            (ash (r color) 16)
+                                            (ash (g color) 8)
+                                            (ash (b color) 0)))))))
     (when cache
       (setf (cached-surface font) surf))
     surf))
 
 @export
 (defmethod _render-string-blended_ ((string string) (font ttf-font)
-				    (color color) free cache)
+                                    (color color) free cache)
   (let ((surf nil))
     (with-foreign-color-copy (col-struct color)
       (setf surf (make-instance 'surface
-				:fp (sdl-ttf-cffi::render-utf8-blended 
-				     (fp font)
-				     string
-				     (if (cffi:foreign-symbol-pointer 
-					  "TTF_glue_RenderUTF8_Blended")
-					 col-struct
-					 (+ (ash (a color) 24)
-					    (ash (r color) 16)
-					    (ash (g color) 8)
-					    (ash (b color) 0)))))))
+                                :fp (sdl-ttf-cffi::render-utf8-blended
+                                     (fp font)
+                                     string
+                                     (if (cffi:foreign-symbol-pointer
+                                          "TTF_glue_RenderUTF8_Blended")
+                                         col-struct
+                                         (+ (ash (a color) 24)
+                                            (ash (r color) 16)
+                                            (ash (g color) 8)
+                                            (ash (b color) 0)))))))
     (when cache
       (setf (cached-surface font) surf))
     surf))

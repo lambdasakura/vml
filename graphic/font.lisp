@@ -1,5 +1,5 @@
 ;;;;------------------------------------------------------------------------;;;;
-;;;; font.lisp manipulating font drawing 
+;;;; font.lisp manipulating font drawing
 ;;;;
 ;;;; Date: 2013.03.25
 ;;;; Author: lambda_sakura(lambda.sakura@gmail.com)
@@ -14,10 +14,10 @@
 (defpackage vml-fonts
   (:nicknames :vml-fonts)
   (:use :cl
-	:cl-annot
-	:cl-annot.class
-	:cl-annot.doc
-	:vml-types))
+        :cl-annot
+        :cl-annot.class
+        :cl-annot.doc
+        :vml-types))
 (in-package :vml-fonts)
 (cl-annot:enable-annot-syntax)
 
@@ -25,43 +25,43 @@
 ;;; Generate SDL Surface
 ;;;-----------------------------------------------------------------------------
 (defun generate-text-surface-blend (string &key color
-					     (font lispbuilder-sdl:*default-font*))
+                                             (font lispbuilder-sdl:*default-font*))
   "generate text surface for blend."
   (let* ((text-surface (sdl:render-string-blended string
-						  :color (color-to-sdl-color color)
-						  :free nil 
-						  :cache nil
-						  :font font))
-	 (width (sdl:width text-surface))
-  	 (height (sdl:height text-surface))
-	 (temp-surface (sdl:create-surface width
-					   height 
-					   :bpp 32
-					   )))
+                                                  :color (color-to-sdl-color color)
+                                                  :free nil
+                                                  :cache nil
+                                                  :font font))
+         (width (sdl:width text-surface))
+         (height (sdl:height text-surface))
+         (temp-surface (sdl:create-surface width
+                                           height
+                                           :bpp 32
+                                           )))
     (sdl:blit-surface text-surface temp-surface)
     text-surface))
 
 (defun generate-text-surface-solid (string &key color
-					     (font lispbuilder-sdl:*default-font*))
+                                             (font lispbuilder-sdl:*default-font*))
   "generate text surface for solid"
   (let* ((text-surface (sdl:render-string-solid string
-						:color (color-to-sdl-color color)
-						:free nil 
-						:cache nil
-						:font font))
-	 (width (sdl:width text-surface))
-  	 (height (sdl:height text-surface))
-	 (temp-surface (sdl:create-surface width
-					   height 
-					   :pixel-alpha t
-					   :bpp 32)))
+                                                :color (color-to-sdl-color color)
+                                                :free nil
+                                                :cache nil
+                                                :font font))
+         (width (sdl:width text-surface))
+         (height (sdl:height text-surface))
+         (temp-surface (sdl:create-surface width
+                                           height
+                                           :pixel-alpha t
+                                           :bpp 32)))
     (sdl:blit-surface text-surface temp-surface)
-    (sdl:convert-to-display-format 
+    (sdl:convert-to-display-format
      :surface temp-surface)))
 
 (defun generate-text-surface (text &key color
-		 (font lispbuilder-sdl:*default-font*)
-		 (type :blend))
+                 (font lispbuilder-sdl:*default-font*)
+                 (type :blend))
   (case type
     (:blend (generate-text-surface-blend text :color color :font font))
     (:solid (generate-text-surface-solid text :color color :font font))))
@@ -98,28 +98,28 @@
   (eq nil (nth-value 0 (gethash key surf-cache))))
 
 (defun get-text-surface-from-cache (text
-				    color 
-				    type
-				    &optional (font 
-					       lispbuilder-sdl:*default-font*))
+                                    color
+                                    type
+                                    &optional (font
+                                               lispbuilder-sdl:*default-font*))
   (let ((key (generate-font-key text color))
-	(surf-cache (select-surface-cache type)))
+        (surf-cache (select-surface-cache type)))
     (when (not-exist-cache-p key surf-cache)
       (add-text-surface-to-cache  key
-				  surf-cache
-				  (generate-text-surface text
-							 :type type
-							 :color color
-							 :font font)))
+                                  surf-cache
+                                  (generate-text-surface text
+                                                         :type type
+                                                         :color color
+                                                         :font font)))
     (gethash key surf-cache)))
 
 ;;;-----------------------------------------------------------------------------
 ;;;text cache
 ;;;-----------------------------------------------------------------------------
-;;; 
+;;;
 ;;;In OpenGL,there is a limit to the number of create textures.
 ;;;so we cached textures in hash table.
-;;; 
+;;;
 ;;;inprogress to implements :(
 ;;;-----------------------------------------------------------------------------
 (defclass text-texture-cache ()
@@ -138,43 +138,43 @@
 ;;;-----------------------------------------------------------------------------
 ;;; Generate OpenGL Texture
 ;;;-----------------------------------------------------------------------------
-(defun generate-text-texture-helper (text 
-				     &key color type
-				       (font lispbuilder-sdl:*default-font*))
-  (let* ((font-surf (get-text-surface-from-cache text 
-						 color
-						 type
-						 font))
-	 (width (sdl:width font-surf))
-	 (height (sdl:height font-surf)))
+(defun generate-text-texture-helper (text
+                                     &key color type
+                                       (font lispbuilder-sdl:*default-font*))
+  (let* ((font-surf (get-text-surface-from-cache text
+                                                 color
+                                                 type
+                                                 font))
+         (width (sdl:width font-surf))
+         (height (sdl:height font-surf)))
     (make-instance 'text-texture-cache
-		   :texture (vml-image:generate-texture-from-surface 
-			     font-surf)
-		   :text text
-		   :width width
-		   :height height)))
+                   :texture (vml-image:generate-texture-from-surface
+                             font-surf)
+                   :text text
+                   :width width
+                   :height height)))
 
 
 (defun generate-text-texture (text &key color
-		 (font lispbuilder-sdl:*default-font*)
-		 (type :blend))
-  (generate-text-texture-helper text 
-				:type type
-				:color color
-				:font font))
-	    
+                 (font lispbuilder-sdl:*default-font*)
+                 (type :blend))
+  (generate-text-texture-helper text
+                                :type type
+                                :color color
+                                :font font))
+
 ;;;-----------------------------------------------------------------------------
 ;;; Drawing Function
 ;;;-----------------------------------------------------------------------------
 
 @export
 (defun draw-font (text point color
-		  &key (font lispbuilder-sdl:*default-font*) (type :blend))
+                  &key (font lispbuilder-sdl:*default-font*) (type :blend))
   (let* ((x (x point))
-	 (y (y point))
-	 (text-texture (generate-text-texture text :color color :font font :type type))
-	 (w (font-width text-texture))
-  	 (h (font-height text-texture)))
+         (y (y point))
+         (text-texture (generate-text-texture text :color color :font font :type type))
+         (w (font-width text-texture))
+         (h (font-height text-texture)))
     (gl:enable :texture-2d)
     (gl:bind-texture :texture-2d (texture text-texture))
     (gl:color 1.0 1.0 1.0 1.0)
@@ -194,9 +194,8 @@
 
 @export
 (defun load-font (filename size)
-  (unless (sdl:initialise-default-font 
-	   (make-instance 'sdl:ttf-font-definition
-			  :size size
-			  :filename  filename))
+  (unless (sdl:initialise-default-font
+           (make-instance 'sdl:ttf-font-definition
+                          :size size
+                          :filename  filename))
     (error "FONT-EXAMPLE: Cannot initialize the default font.")))
-

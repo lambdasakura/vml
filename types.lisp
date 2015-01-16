@@ -10,12 +10,12 @@
 (defpackage :vml-types
   (:documentation "Types in VML System")
   (:use :cl
-	:cl-annot
-	:cl-annot.class
-	:cl-annot.doc
-	:cl-store
-	:cl-fad
-	)
+        :cl-annot
+        :cl-annot.class
+        :cl-annot.doc
+        :cl-store
+        :cl-fad
+        )
   (:nicknames :vml-types))
 (in-package :vml-types)
 (cl-annot:enable-annot-syntax)
@@ -62,9 +62,9 @@
 
 @export
 (defun color-to-sdl-color (color)
-  (if color 
+  (if color
       (sdl:color :r (red color)
-		 :g (green color)
-		 :b (blue color)
-		 :a (alpha color))
+                 :g (green color)
+                 :b (blue color)
+                 :a (alpha color))
       (sdl:*black*)))
